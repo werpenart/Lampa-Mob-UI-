@@ -486,8 +486,22 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     width: 100%;
     aspect-ratio: 354 / 532;
     border-radius: 24px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.56);
     background: rgba(255, 255, 255, 0.06);
+}
+
+/* Тень из макета (hero-shadow): отдельный блок 325×166 под нижней частью постера,
+   отступы 13px слева, 16px справа и 4px снизу, тень 0 8 24 / 56% */
+.mobui-hero__shadow {
+    position: absolute;
+    left: 13px;
+    right: 16px;
+    bottom: 4px;
+    height: 31.2%;
+    border-radius: 16px;
+    background: #d9d9d9;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.56);
+    z-index: -1;
+    pointer-events: none;
 }
 
 .mobui-hero__poster > img {

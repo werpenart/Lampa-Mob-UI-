@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.17';
+    var VERSION = '0.1.18';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -1371,26 +1371,60 @@
 
                 var render = $(object.activity.render());
                 var body = render.find('.scroll__body').eq(0);
-                var line = render.find('.items-line').filter(function () {
-                    return !Cards.isWide(this) && $(this).find('.card').length >= 3;
-                }).eq(0);
+                var line = self.sourceLine(render);
+
+                // Через ~4 с без нужного ряда — берём первый обычный ряд
+                if (!line.length && tries > 80) {
+                    line = render.find('.items-line').filter(function () {
+                        return !Cards.isWide(this) && $(this).find('.card').length >= 3;
+                    }).eq(0);
+                }
 
                 if (body.length && line.length && line.find('.card').length >= 3) {
                     if (!body.children('.mobui-hero').length) self.build(body, line);
                 }
-                else if (tries++ < 300) setTimeout(check, 50);
+                else if (tries++ < 400) setTimeout(check, 50);
             };
 
             check();
         },
 
+        // Источник слайдера — новинки: ряд «Сейчас смотрят» (в кино/цифре сейчас),
+        // если его нет — «Сегодня в тренде». Рекомендации и прочие ряды не берём
+        sourceLine: function (render) {
+            var lines = render.find('.items-line').filter(function () {
+                return !Cards.isWide(this) && $(this).find('.card').length >= 3;
+            });
+
+            var titles = ['title_now_watch', 'title_trend_day', 'title_trend_week'].map(function (k) { return Lampa.Lang.translate(k); });
+
+            for (var i = 0; i < titles.length; i++) {
+                var found = lines.filter(function () {
+                    return $(this).find('.items-line__title').eq(0).text().trim() === titles[i];
+                }).eq(0);
+
+                if (found.length) return found;
+            }
+
+            // Пока нужный ряд не загрузился — ждём (Lampa подгружает ряды по очереди)
+            return $();
+        },
+
         collect: function (line) {
             var items = [];
 
+            var minYear = new Date().getFullYear() - 1;
+            var all = [];
+
             line.find('.card').each(function () {
                 var d = this.card_data;
-                if (d && d.poster_path && items.length < 8 && !items.find(function (i) { return i.id === d.id; })) items.push(d);
+                if (d && d.poster_path && !all.find(function (i) { return i.id === d.id; })) all.push(d);
             });
+
+            // Только свежие релизы; если таких мало — берём ряд как есть
+            var fresh = all.filter(function (d) { return parseInt(cardYear(d), 10) >= minYear; });
+
+            items = (fresh.length >= 3 ? fresh : all).slice(0, 8);
 
             return items;
         },
@@ -1409,6 +1443,7 @@
                 var slide = $(
                     '<div class="mobui-hero__slide">' +
                         '<div class="mobui-hero__poster">' +
+                            '<div class="mobui-hero__shadow"></div>' +
                             '<img src="' + esc(tmdbImg(card.poster_path, 'w500')) + '" />' +
                             '<div class="mobui-hero__badges">' + badge(isSeries(card) ? t('series') : t('movie'), 'mobui-badge--big') + (cardQuality(card) ? badge(cardQuality(card), 'mobui-badge--big') : '') + '</div>' +
                             '<div class="mobui-hero__rating">' + rating(cardVote(card), true) + '</div>' +

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.23';
+    var VERSION = '0.1.24';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2127,6 +2127,51 @@
     /* Запуск                                                              */
     /* ------------------------------------------------------------------ */
 
+    /* ------------------------------------------------------------------ */
+    /* «Картинка в картинке» в плеере Lampa на iPhone                      */
+    /* ------------------------------------------------------------------ */
+
+    // Lampa прячет кнопку PiP, когда открыта с экрана «Домой» на iOS.
+    // Показываем её и, если стандартного API нет, включаем PiP через WebKit
+    var Pip = {
+        bound: false,
+
+        video: function () {
+            return document.querySelector('.player video');
+        },
+
+        enable: function () {
+            var btn = document.querySelector('.player-panel__pip');
+            if (!btn) return;
+
+            btn.classList.remove('hide');
+
+            if (this.bound) return;
+            this.bound = true;
+
+            var self = this;
+            var handler = function (e) {
+                var v = self.video();
+                if (!v) return;
+
+                v.setAttribute('playsinline', '');
+                v.setAttribute('webkit-playsinline', '');
+
+                // Стандартный API есть — дальше справится сама Lampa
+                if (document.pictureInPictureEnabled && v.requestPictureInPicture) return;
+
+                if (v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture')) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    v.webkitSetPresentationMode(v.webkitPresentationMode === 'picture-in-picture' ? 'inline' : 'picture-in-picture');
+                }
+            };
+
+            btn.addEventListener('hover:enter', handler, true);
+            btn.addEventListener('click', handler, true);
+        }
+    };
+
     /* Статус-бар iOS: страница уходит под него, без отдельной подложки */
     var StatusBar = {
         color: '#0b0605',
@@ -2197,8 +2242,8 @@
                 try { open = Lampa.Player.opened(); } catch (e) { }
                 document.body.classList.toggle('mobui-player-open', !!open);
             };
-            Lampa.Player.listener.follow('start', function () { document.body.classList.add('mobui-player-open'); });
-            Lampa.Player.listener.follow('ready', function () { document.body.classList.add('mobui-player-open'); });
+            Lampa.Player.listener.follow('start', function () { document.body.classList.add('mobui-player-open'); Pip.enable(); });
+            Lampa.Player.listener.follow('ready', function () { document.body.classList.add('mobui-player-open'); Pip.enable(); });
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 

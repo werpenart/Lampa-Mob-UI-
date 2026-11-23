@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.21';
+    var VERSION = '0.1.22';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -876,9 +876,24 @@
             var logo = $('<img class="mobui-card mobui-wide-logo" />');
 
             img.on('load', function () { img.addClass('loaded'); });
-            logo.on('load', function () { logo.addClass('loaded'); });
+            logo.on('load', function () {
+                if (Art.isDark(logo[0])) logo.addClass('mobui-wide-logo--light');
+                logo.addClass('loaded');
+            });
+
+            // Логотип читаем на любом кадре: картинку загружаем с CORS, чтобы узнать её яркость.
+            // Если сервер картинок CORS не даёт — грузим как обычно, без проверки
+            logo[0].crossOrigin = 'anonymous';
+            logo.on('error', function () {
+                if (logo[0].crossOrigin) {
+                    var src = logo.attr('src');
+                    logo[0].removeAttribute('crossorigin');
+                    logo.attr('src', src);
+                }
+            });
 
             view.prepend(img);
+            view.append('<div class="mobui-card mobui-wide-scrim"></div>');
             view.append(logo);
 
             Art.get(data, function (art) {
@@ -945,6 +960,29 @@
                 }
                 try { localStorage.setItem(self.CACHE_KEY, JSON.stringify(self.cache)); } catch (e) { }
             }, 1000);
+        },
+
+        // Тёмный логотип (как синяя надпись The Odyssey) на кадре не читается —
+        // такие перекрашиваем в белый
+        isDark: function (img) {
+            try {
+                var w = 48, h = Math.max(8, Math.round(48 * img.naturalHeight / Math.max(1, img.naturalWidth)));
+                var canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+
+                var px = ctx.getImageData(0, 0, w, h).data;
+                var sum = 0, n = 0;
+
+                for (var i = 0; i < px.length; i += 4) {
+                    if (px[i + 3] < 128) continue;
+                    sum += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+                    n++;
+                }
+
+                return n > 0 && sum / n < 0.55;
+            } catch (e) { return false; }
         },
 
         // Логотип: на языке интерфейса, затем английский, затем любой

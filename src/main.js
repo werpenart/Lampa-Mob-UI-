@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.9';
+    var VERSION = '0.1.10';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -819,7 +819,9 @@
                 if (!q) {
                     el.mobui_qkey = Quality.key(data);
                     el.mobui_qapply = function (quality) {
-                        if (!box.find('.mobui-badge--q').length) box.append(badge(quality, 'mobui-badge--q'));
+                        var b = box.find('.mobui-badge--q');
+                        if (b.length) b.text(quality);
+                        else box.append(badge(quality, 'mobui-badge--q'));
                     };
                     Quality.watch(el, data, el.mobui_qapply);
                 }
@@ -879,7 +881,8 @@
         CACHE_KEY: 'mobui_quality_v2',
         TTL_FOUND: 24 * 3600 * 1000,
         TTL_EMPTY: 2 * 3600 * 1000,
-        MAX_PARALLEL: 2,
+        KEEP: 30 * 24 * 3600 * 1000,
+        MAX_PARALLEL: 6,
         RETRY_DELAYS: [8000, 25000],
 
         cache: null,
@@ -927,11 +930,13 @@
             return (isSeries(card) ? 'tv' : 'movie') + '_' + card.id;
         },
 
-        cached: function (card) {
+        // Запись из кеша: показываем сразу, даже устаревшую; fresh — можно не перепроверять
+        entry: function (card) {
             var c = this.cache[this.key(card)];
-            if (!c) return undefined;
-            if (Date.now() - c.t > (c.q ? this.TTL_FOUND : this.TTL_EMPTY)) return undefined;
-            return c.q;
+            if (!c) return null;
+            var age = Date.now() - c.t;
+            if (age > this.KEEP) return null;
+            return { q: c.q, fresh: age < (c.q ? this.TTL_FOUND : this.TTL_EMPTY) };
         },
 
         store: function (card, q) {
@@ -941,9 +946,9 @@
             clearTimeout(this.saveTimer);
             this.saveTimer = setTimeout(function () {
                 var keys = Object.keys(self.cache);
-                if (keys.length > 800) {
+                if (keys.length > 1500) {
                     keys.sort(function (a, b) { return self.cache[a].t - self.cache[b].t; });
-                    keys.slice(0, keys.length - 600).forEach(function (k) { delete self.cache[k]; });
+                    keys.slice(0, keys.length - 1200).forEach(function (k) { delete self.cache[k]; });
                 }
                 try { localStorage.setItem(self.CACHE_KEY, JSON.stringify(self.cache)); } catch (e) { }
             }, 1000);
@@ -1126,18 +1131,21 @@
             }
         },
 
-        get: function (card, cb) {
+        // Сразу отдаёт качество из кеша (если есть) и в фоне обновляет устаревшее
+        get: function (card, cb, first) {
             if (!card || !card.id || !this.enabled()) return;
 
-            var q = this.cached(card);
-            if (q !== undefined) { if (q) cb(q); return; }
+            var c = this.entry(card);
+            if (c && c.q) cb(c.q);
+            if (c && c.fresh) return;
 
             var key = this.key(card);
 
             if (this.waiting[key]) { this.waiting[key].push(function (v) { if (v) cb(v); }); return; }
 
             this.waiting[key] = [function (v) { if (v) cb(v); }];
-            this.queue.push(card);
+            if (first) this.queue.unshift(card);
+            else this.queue.push(card);
             this.pump();
         },
 
@@ -1152,17 +1160,9 @@
         },
 
         // Запрос — только когда карточка попала на экран
+        // Запрашиваем сразу при появлении карточки, не дожидаясь прокрутки до неё
         watch: function (el, card, cb) {
-            var self = this;
-            if (!this.enabled()) return;
-
-            var q = this.cached(card);
-            if (q !== undefined) { if (q) cb(q); return; }
-
-            el.mobui_quality_job = function () { self.get(card, cb); };
-
-            if (this.observer) this.observer.observe(el);
-            else el.mobui_quality_job();
+            this.get(card, cb);
         }
     };
 
@@ -1261,9 +1261,11 @@
                     slide[0].mobui_qkey = Quality.key(card);
                     slide[0].mobui_qapply = function (quality) {
                         var b = slide.find('.mobui-hero__badges');
-                        if (!b.find('.mobui-badge--q').length) b.append(badge(quality, 'mobui-badge--big mobui-badge--q'));
+                        var e = b.find('.mobui-badge--q');
+                        if (e.length) e.text(quality);
+                        else b.append(badge(quality, 'mobui-badge--big mobui-badge--q'));
                     };
-                    Quality.get(card, slide[0].mobui_qapply);
+                    Quality.get(card, slide[0].mobui_qapply, true);
                 }
 
                 track.append(slide);

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.8';
+    var VERSION = '0.1.9';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Лучшее качество из торрентов (парсер Lampa / JacRed)' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Найкраща якість із торрентів (парсер Lampa / JacRed)' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Best quality from torrents (Lampa parser / JacRed)' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Лучшее качество из торрентов (JacRed)' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Найкраща якість із торрентів (JacRed)' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Best quality from torrents (JacRed)' }
     };
 
     function lang() {
@@ -876,7 +876,7 @@
     // Лучшее качество, в котором фильм уже раздают, берётся из того же парсера,
     // что и торренты в Lampa (у Lampac это JacRed). Результат кешируется на сутки
     var Quality = {
-        CACHE_KEY: 'mobui_quality',
+        CACHE_KEY: 'mobui_quality_v2',
         TTL_FOUND: 24 * 3600 * 1000,
         TTL_EMPTY: 2 * 3600 * 1000,
         MAX_PARALLEL: 2,
@@ -909,7 +909,8 @@
         },
 
         enabled: function () {
-            return Lampa.Storage.get('mobui_quality', 'true') !== false && Lampa.Storage.get('mobui_quality', 'true') !== 'false' && !!this.parser();
+            var v = Lampa.Storage.get('mobui_quality', 'true');
+            return v !== false && v !== 'false';
         },
 
         parser: function () {
@@ -999,9 +1000,73 @@
             return '';
         },
 
+        // Публичный JacRed: сам разбирает качество раздач (поле quality) и ищет точно
+        // по названию и году — так же получают качество другие плагины Lampa
+        JACRED: 'https://jac.red',
+
+        bestJac: function (list, card) {
+            var self = this;
+            var year = parseInt(cardYear(card), 10);
+            var res = 0, cam = false, any = false;
+
+            list.forEach(function (item) {
+                if (year && item.relased && Math.abs(item.relased - year) > 1) return;
+
+                any = true;
+
+                if (self.isCam({ Title: item.title })) { cam = true; return; }
+
+                var q = item.quality || self.resolution({ Title: item.title });
+                if (q > res) res = q;
+            });
+
+            if (res >= 2160) return '4K';
+            if (res >= 1080) return 'FHD';
+            if (res >= 720) return 'HD';
+            if (res > 0) return 'SD';
+            if (cam && any) return 'CamRip';
+            return '';
+        },
+
+        request: function (url, parse, done) {
+            var finished = false;
+            var finish = function (q) { if (finished) return; finished = true; done(q); };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.timeout = 15000;
+            xhr.onload = function () {
+                if (xhr.status !== 200) return finish(null);
+                try { finish(parse(JSON.parse(xhr.responseText))); }
+                catch (e) { finish(null); }
+            };
+            xhr.onerror = xhr.ontimeout = function () { finish(null); };
+            xhr.send();
+        },
+
         fetch: function (card, done) {
+            var self = this;
+            var title = card.title || card.name || '';
+            var original = card.original_title || card.original_name || title;
+            var year = cardYear(card);
+
+            var url = this.JACRED + '/api/v1.0/torrents?search=' + encodeURIComponent(original || title) +
+                (title && title !== original ? '&altname=' + encodeURIComponent(title) : '') +
+                '&exact=true&type=' + (isSeries(card) ? 'serial' : 'movie') +
+                (year ? '&relased=' + year : '');
+
+            this.request(url, function (json) {
+                return self.bestJac(Array.isArray(json) ? json : [], card);
+            }, function (q) {
+                // JacRed недоступен — спрашиваем парсер из настроек Lampa
+                if (q === null) self.fetchParser(card, done);
+                else done(q);
+            });
+        },
+
+        fetchParser: function (card, done) {
             var p = this.parser();
-            if (!p) return done('');
+            if (!p) return done(null);
 
             var title = card.title || card.name || '';
             var original = card.original_title || card.original_name || title;
@@ -1016,21 +1081,10 @@
                 '&Category[]=' + (isSeries(card) ? '5000' : '2000');
 
             var self = this;
-            var finished = false;
-            var finish = function (q) { if (finished) return; finished = true; done(q); };
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.timeout = 15000;
-            xhr.onload = function () {
-                if (xhr.status !== 200) return finish(null);
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    finish(self.best(json.Results || [], card));
-                } catch (e) { finish(null); }
-            };
-            xhr.onerror = xhr.ontimeout = function () { finish(null); };
-            xhr.send();
+            this.request(url, function (json) {
+                return self.best(json.Results || [], card);
+            }, done);
         },
 
         pump: function () {

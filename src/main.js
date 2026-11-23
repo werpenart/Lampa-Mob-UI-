@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.13';
+    var VERSION = '0.1.14';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -889,7 +889,7 @@
     // Лучшее качество, в котором фильм уже раздают, берётся из того же парсера,
     // что и торренты в Lampa (у Lampac это JacRed). Результат кешируется на сутки
     var Quality = {
-        CACHE_KEY: 'mobui_quality_v4',
+        CACHE_KEY: 'mobui_quality_v5',
         TTL_FOUND: 24 * 3600 * 1000,
         TTL_EMPTY: 2 * 3600 * 1000,
         KEEP: 30 * 24 * 3600 * 1000,
@@ -1030,10 +1030,12 @@
         bestJac: function (list, card) {
             var self = this;
             var year = parseInt(cardYear(card), 10);
+            var series = isSeries(card);
             var res = 0, cam = false, any = false;
 
             list.forEach(function (item) {
-                if (year && item.relased && Math.abs(item.relased - year) > 1) return;
+                // У сериала каждый сезон со своим годом: отбрасываем только раздачи старше премьеры
+                if (year && item.relased && (series ? item.relased < year - 1 : Math.abs(item.relased - year) > 1)) return;
 
                 any = true;
 
@@ -1105,30 +1107,46 @@
             return '';
         },
 
+        // Сериалы в Alloha бывают в разных категориях (serial, tv-show, anime-serial) —
+        // пробуем по очереди, пока не найдём
         fetchAlloha: function (card, done) {
             var token = (Lampa.Storage.get('mobui_alloha_token', '') + '').trim();
             if (!token) return done('');
 
             var self = this;
-            var url = this.ALLOHA + '/v2/movies/tmdb/' + card.id + '?category=' + (isSeries(card) ? 'serial' : 'movie');
+            var cats = isSeries(card) ? ['serial', 'tv-show', 'anime-serial'] : ['movie', 'anime'];
 
-            var finished = false;
-            var finish = function (q) { if (finished) return; finished = true; done(q); };
+            var next = function (i) {
+                if (i >= cats.length) return done('');
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.timeout = 10000;
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-            xhr.setRequestHeader('Accept', 'application/json');
-            xhr.onload = function () {
-                if (xhr.status !== 200) return finish('');
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    finish(self.bestAlloha(json && json.data));
-                } catch (e) { finish(''); }
+                var url = self.ALLOHA + '/v2/movies/tmdb/' + card.id + '?category=' + cats[i];
+                var finished = false;
+                var finish = function (data) {
+                    if (finished) return;
+                    finished = true;
+
+                    if (data === undefined) next(i + 1);
+                    else done(self.bestAlloha(data));
+                };
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.timeout = 10000;
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.onload = function () {
+                    if (xhr.status === 404) return finish(undefined);
+                    if (xhr.status !== 200) return finish(null);
+                    try {
+                        var json = JSON.parse(xhr.responseText);
+                        finish(json && json.data ? json.data : undefined);
+                    } catch (e) { finish(null); }
+                };
+                xhr.onerror = xhr.ontimeout = function () { finish(null); };
+                xhr.send();
             };
-            xhr.onerror = xhr.ontimeout = function () { finish(''); };
-            xhr.send();
+
+            next(0);
         },
 
         fetchJac: function (card, done) {
@@ -1140,7 +1158,7 @@
             var url = this.JACRED + '/api/v1.0/torrents?search=' + encodeURIComponent(original || title) +
                 (title && title !== original ? '&altname=' + encodeURIComponent(title) : '') +
                 '&exact=true&type=' + (isSeries(card) ? 'serial' : 'movie') +
-                (year ? '&relased=' + year : '');
+                (year && !isSeries(card) ? '&relased=' + year : '');
 
             this.request(url, function (json) {
                 return self.bestJac(Array.isArray(json) ? json : [], card);

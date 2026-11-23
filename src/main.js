@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.12';
+    var VERSION = '0.1.13';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Alloha, CUB, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — CUB и JacRed' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Alloha, CUB, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — CUB і JacRed' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Alloha, CUB, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — CUB and JacRed' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
     };
 
     function lang() {
@@ -90,9 +90,20 @@
         return v > 0 ? (v >= 10 ? '10' : v.toFixed(1)) : '';
     }
 
+    // Только понятные метки: 4K / FHD / HD / SD / CamRip (WEB-DL, BDRip и т.п. не показываем)
+    function normQuality(q) {
+        q = typeof q === 'string' ? q : '';
+        if (!q) return '';
+        if (/\b(cam|camrip|ts|telesync|tc|hdcam|hdts)\b/i.test(q)) return 'CamRip';
+        if (/2160|4k|uhd/i.test(q)) return '4K';
+        if (/1080|fhd|full\s*hd/i.test(q)) return 'FHD';
+        if (/720|\bhd\b/i.test(q)) return 'HD';
+        if (/480|576|\bsd\b/i.test(q)) return 'SD';
+        return '';
+    }
+
     function cardQuality(card) {
-        var q = card.release_quality || card.quality || '';
-        return typeof q === 'string' ? q : '';
+        return normQuality(card.release_quality || card.quality || '');
     }
 
     function badge(text, cls) {
@@ -878,7 +889,7 @@
     // Лучшее качество, в котором фильм уже раздают, берётся из того же парсера,
     // что и торренты в Lampa (у Lampac это JacRed). Результат кешируется на сутки
     var Quality = {
-        CACHE_KEY: 'mobui_quality_v3',
+        CACHE_KEY: 'mobui_quality_v4',
         TTL_FOUND: 24 * 3600 * 1000,
         TTL_EMPTY: 2 * 3600 * 1000,
         KEEP: 30 * 24 * 3600 * 1000,
@@ -1056,19 +1067,13 @@
             xhr.send();
         },
 
-        // Сначала CUB: его зеркало TMDB отдаёт ту же карточку с полем release_quality
-        // (как при источнике CUB). Нет поля — спрашиваем JacRed
-        // Порядок: Alloha (по TMDB ID, если задан токен) → CUB (release_quality) → JacRed
+        // Порядок: Alloha (по TMDB ID, если задан токен) → JacRed
         fetch: function (card, done) {
             var self = this;
 
             this.fetchAlloha(card, function (q) {
-                if (q) return done(q);
-
-                self.fetchCub(card, function (q2) {
-                    if (q2) done(q2);
-                    else self.fetchJac(card, done);
-                });
+                if (q) done(q);
+                else self.fetchJac(card, done);
             });
         },
 
@@ -1124,24 +1129,6 @@
             };
             xhr.onerror = xhr.ontimeout = function () { finish(''); };
             xhr.send();
-        },
-
-        fetchCub: function (card, done) {
-            var url;
-
-            try {
-                var domain = Lampa.Manifest.cub_domain;
-                var email = (Lampa.Storage.get('account', '{}') || {}).email || '';
-                var lang = Lampa.Storage.field('tmdb_lang') || Lampa.Storage.get('language', 'ru');
-
-                url = Lampa.Utils.protocol() + 'tmdb.' + domain + '/3/' + (isSeries(card) ? 'tv' : 'movie') + '/' + card.id +
-                    '?api_key=' + Lampa.TMDB.key() + '&language=' + encodeURIComponent(lang) + '&email=' + encodeURIComponent(email);
-            } catch (e) { return done(''); }
-
-            this.request(url, function (json) {
-                var q = json && (json.release_quality || json.quality);
-                return typeof q === 'string' ? q.trim() : '';
-            }, function (q) { done(q || ''); });
         },
 
         fetchJac: function (card, done) {

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.20';
+    var VERSION = '0.1.21';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -871,8 +871,21 @@
         },
 
         wide: function (el, data, view) {
-            var back = data.backdrop_path ? tmdbImg(data.backdrop_path, 'w780') : '';
-            if (back) view.prepend('<img class="mobui-card mobui-wide-img" src="' + esc(back) + '" />');
+            // Кадр — случайный из первых трёх на TMDB (без текста), по центру — логотип
+            var img = $('<img class="mobui-card mobui-wide-img" />');
+            var logo = $('<img class="mobui-card mobui-wide-logo" />');
+
+            img.on('load', function () { img.addClass('loaded'); });
+            logo.on('load', function () { logo.addClass('loaded'); });
+
+            view.prepend(img);
+            view.append(logo);
+
+            Art.get(data, function (art) {
+                var list = art.backdrops.length ? art.backdrops : (data.backdrop_path ? [data.backdrop_path] : []);
+                if (list.length) img.attr('src', tmdbImg(list[Math.floor(Math.random() * list.length)], 'w780'));
+                if (art.logo) logo.attr('src', tmdbImg(art.logo, 'w500'));
+            });
 
             var percent = 0;
             var episode = '';
@@ -904,6 +917,91 @@
         }
     };
 
+
+    /* ------------------------------------------------------------------ */
+    /* Кадры и логотипы с TMDB                                             */
+    /* ------------------------------------------------------------------ */
+
+    var Art = {
+        CACHE_KEY: 'mobui_art',
+        TTL: 7 * 24 * 3600 * 1000,
+        cache: null,
+        waiting: {},
+
+        load: function () {
+            if (this.cache) return;
+            try { this.cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}') || {}; }
+            catch (e) { this.cache = {}; }
+        },
+
+        save: function () {
+            var self = this;
+            clearTimeout(this.timer);
+            this.timer = setTimeout(function () {
+                var keys = Object.keys(self.cache);
+                if (keys.length > 400) {
+                    keys.sort(function (a, b) { return self.cache[a].t - self.cache[b].t; });
+                    keys.slice(0, keys.length - 300).forEach(function (k) { delete self.cache[k]; });
+                }
+                try { localStorage.setItem(self.CACHE_KEY, JSON.stringify(self.cache)); } catch (e) { }
+            }, 1000);
+        },
+
+        // Логотип: на языке интерфейса, затем английский, затем любой
+        pickLogo: function (logos) {
+            var lang = (Lampa.Storage.field('tmdb_lang') || Lampa.Storage.get('language', 'ru') || 'ru').split(/[-_]/)[0];
+            var order = [lang, 'en', null];
+
+            for (var i = 0; i < order.length; i++) {
+                var found = logos.filter(function (l) { return (l.iso_639_1 || null) === order[i] && !/\.svg$/i.test(l.file_path); });
+                if (found.length) return found[0].file_path;
+            }
+
+            return logos.length ? logos[0].file_path : '';
+        },
+
+        get: function (card, cb) {
+            this.load();
+
+            var key = (isSeries(card) ? 'tv' : 'movie') + '_' + card.id;
+            var c = this.cache[key];
+
+            if (c && Date.now() - c.t < this.TTL) return cb(c);
+
+            if (this.waiting[key]) return this.waiting[key].push(cb);
+            this.waiting[key] = [cb];
+
+            var self = this;
+            var lang = (Lampa.Storage.field('tmdb_lang') || Lampa.Storage.get('language', 'ru') || 'ru').split(/[-_]/)[0];
+            var method = (isSeries(card) ? 'tv' : 'movie') + '/' + card.id + '/images?include_image_language=' + lang + ',en,null';
+
+            var finish = function (art) {
+                var cbs = self.waiting[key] || [];
+                delete self.waiting[key];
+                cbs.forEach(function (f) { try { f(art); } catch (e) { } });
+            };
+
+            try {
+                Lampa.Api.sources.tmdb.get(method, {}, function (json) {
+                    // Кадры без текста — в том порядке, как на сайте TMDB, первые три
+                    var backs = (json.backdrops || []).filter(function (b) { return !b.iso_639_1; });
+                    if (!backs.length) backs = json.backdrops || [];
+
+                    var art = {
+                        backdrops: backs.slice(0, 3).map(function (b) { return b.file_path; }),
+                        logo: self.pickLogo(json.logos || []),
+                        t: Date.now()
+                    };
+
+                    self.cache[key] = art;
+                    self.save();
+                    finish(art);
+                }, function () {
+                    finish({ backdrops: [], logo: '' });
+                });
+            } catch (e) { finish({ backdrops: [], logo: '' }); }
+        }
+    };
 
     /* ------------------------------------------------------------------ */
     /* Качество из торрентов                                               */

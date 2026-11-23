@@ -727,6 +727,8 @@ body.player--viewing .mobui-tabbar,
 body.player--viewing .mobui-head,
 body.mobui-drawer-open .mobui-tabbar,
 body.mobui-sheet-open .mobui-tabbar,
+body.settings--open .mobui-tabbar,
+body.selectbox--open .mobui-tabbar,
 body.keyboard-input--visible .mobui-tabbar { display: none; }
 
 /* ---------- Боковое меню ---------- */
@@ -1024,7 +1026,7 @@ body.mobui .settings__title {
 }
 
 body.mobui .settings__body .scroll { max-height: none !important; }
-body.mobui .settings__body .scroll__content { padding: 0 0 112px !important; }
+body.mobui .settings__body .scroll__content { padding: 0 0 24px !important; }
 
 body.mobui .settings-folder {
     display: flex !important;

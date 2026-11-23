@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.6';
+    var VERSION = '0.1.7';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -816,9 +816,13 @@
                 var box = $('<div class="mobui-card mobui-badges">' + badges + '</div>');
                 view.append(box);
 
-                if (!q) Quality.watch(el, data, function (quality) {
-                    if (!box.find('.mobui-badge--q').length) box.append(badge(quality, 'mobui-badge--q'));
-                });
+                if (!q) {
+                    el.mobui_qkey = Quality.key(data);
+                    el.mobui_qapply = function (quality) {
+                        if (!box.find('.mobui-badge--q').length) box.append(badge(quality, 'mobui-badge--q'));
+                    };
+                    Quality.watch(el, data, el.mobui_qapply);
+                }
             }
 
             // Рейтинг со звездой
@@ -874,12 +878,14 @@
     var Quality = {
         CACHE_KEY: 'mobui_quality',
         TTL_FOUND: 24 * 3600 * 1000,
-        TTL_EMPTY: 6 * 3600 * 1000,
-        MAX_PARALLEL: 3,
+        TTL_EMPTY: 2 * 3600 * 1000,
+        MAX_PARALLEL: 2,
+        RETRY_DELAYS: [8000, 25000],
 
         cache: null,
         queue: [],
         waiting: {},
+        retries: {},
         active: 0,
         observer: null,
         saveTimer: null,
@@ -1040,12 +1046,25 @@
                     self.fetch(card, function (q) {
                         self.active--;
 
-                        // null — ошибка сети/парсера: не кешируем, просто без бейджа
-                        if (q !== null) self.store(card, q);
+                        // null — парсер не ответил (таймаут, 502): не кешируем и пробуем позже ещё раз
+                        if (q === null) {
+                            var n = self.retries[key] || 0;
+                            if (n < self.RETRY_DELAYS.length) {
+                                self.retries[key] = n + 1;
+                                setTimeout(function () { self.queue.push(card); self.pump(); }, self.RETRY_DELAYS[n]);
+                                self.pump();
+                                return;
+                            }
+                        }
+                        else self.store(card, q);
+
+                        delete self.retries[key];
 
                         var cbs = self.waiting[key] || [];
                         delete self.waiting[key];
                         cbs.forEach(function (cb) { try { cb(q || ''); } catch (e) { } });
+
+                        if (q) self.broadcast(key, q);
 
                         self.pump();
                     });
@@ -1066,6 +1085,16 @@
             this.waiting[key] = [function (v) { if (v) cb(v); }];
             this.queue.push(card);
             this.pump();
+        },
+
+        // Один и тот же фильм бывает в нескольких рядах: бейдж получают все его карточки
+        broadcast: function (key, q) {
+            $('.mobui-card-el').each(function () {
+                if (this.mobui_qkey === key && this.mobui_qapply) this.mobui_qapply(q);
+            });
+            $('.mobui-hero__slide').each(function () {
+                if (this.mobui_qkey === key && this.mobui_qapply) this.mobui_qapply(q);
+            });
         },
 
         // Запрос — только когда карточка попала на экран
@@ -1174,10 +1203,14 @@
 
                 self.state(slide, card);
 
-                if (!cardQuality(card)) Quality.get(card, function (quality) {
-                    var b = slide.find('.mobui-hero__badges');
-                    if (!b.find('.mobui-badge--q').length) b.append(badge(quality, 'mobui-badge--big mobui-badge--q'));
-                });
+                if (!cardQuality(card)) {
+                    slide[0].mobui_qkey = Quality.key(card);
+                    slide[0].mobui_qapply = function (quality) {
+                        var b = slide.find('.mobui-hero__badges');
+                        if (!b.find('.mobui-badge--q').length) b.append(badge(quality, 'mobui-badge--big mobui-badge--q'));
+                    };
+                    Quality.get(card, slide[0].mobui_qapply);
+                }
 
                 track.append(slide);
                 dots.append('<div class="mobui-hero__dot' + (i === 0 ? ' active' : '') + '"></div>');

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.5';
+    var VERSION = '0.1.6';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Лучшее качество из торрентов (парсер Lampa / JacRed)' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Найкраща якість із торрентів (парсер Lampa / JacRed)' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Best quality from torrents (Lampa parser / JacRed)' }
     };
 
     function lang() {
@@ -812,7 +812,13 @@
                 var badges = badge(isSeries(data) ? t('series') : t('movie'));
                 var q = cardQuality(data);
                 if (q) badges += badge(q);
-                view.append('<div class="mobui-card mobui-badges">' + badges + '</div>');
+
+                var box = $('<div class="mobui-card mobui-badges">' + badges + '</div>');
+                view.append(box);
+
+                if (!q) Quality.watch(el, data, function (quality) {
+                    if (!box.find('.mobui-badge--q').length) box.append(badge(quality, 'mobui-badge--q'));
+                });
             }
 
             // Рейтинг со звездой
@@ -855,6 +861,225 @@
                 title.wrap('<div class="mobui-card mobui-title-row"></div>');
                 title.parent().append('<div class="mobui-episode">' + icon('episode') + '<div class="mobui-episode__text">' + episode + '</div></div>');
             }
+        }
+    };
+
+
+    /* ------------------------------------------------------------------ */
+    /* Качество из торрентов                                               */
+    /* ------------------------------------------------------------------ */
+
+    // Лучшее качество, в котором фильм уже раздают, берётся из того же парсера,
+    // что и торренты в Lampa (у Lampac это JacRed). Результат кешируется на сутки
+    var Quality = {
+        CACHE_KEY: 'mobui_quality',
+        TTL_FOUND: 24 * 3600 * 1000,
+        TTL_EMPTY: 6 * 3600 * 1000,
+        MAX_PARALLEL: 3,
+
+        cache: null,
+        queue: [],
+        waiting: {},
+        active: 0,
+        observer: null,
+        saveTimer: null,
+
+        init: function () {
+            var self = this;
+
+            try { this.cache = JSON.parse(localStorage.getItem(this.CACHE_KEY) || '{}') || {}; }
+            catch (e) { this.cache = {}; }
+
+            if (window.IntersectionObserver) {
+                this.observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting) return;
+                        self.observer.unobserve(entry.target);
+                        var job = entry.target.mobui_quality_job;
+                        if (job) job();
+                    });
+                }, { rootMargin: '200px' });
+            }
+        },
+
+        enabled: function () {
+            return Lampa.Storage.get('mobui_quality', 'true') !== false && Lampa.Storage.get('mobui_quality', 'true') !== 'false' && !!this.parser();
+        },
+
+        parser: function () {
+            var url = Lampa.Storage.field('jackett_url') || '';
+            if (!url) return null;
+
+            try { url = Lampa.Utils.checkEmptyUrl(url); }
+            catch (e) { if (!/^https?:/.test(url)) url = location.protocol + '//' + url; }
+
+            return { url: url.replace(/\/+$/, '').replace('jacred.xyz', 'jac.red'), key: Lampa.Storage.field('jackett_key') || '' };
+        },
+
+        key: function (card) {
+            return (isSeries(card) ? 'tv' : 'movie') + '_' + card.id;
+        },
+
+        cached: function (card) {
+            var c = this.cache[this.key(card)];
+            if (!c) return undefined;
+            if (Date.now() - c.t > (c.q ? this.TTL_FOUND : this.TTL_EMPTY)) return undefined;
+            return c.q;
+        },
+
+        store: function (card, q) {
+            var self = this;
+            this.cache[this.key(card)] = { q: q || '', t: Date.now() };
+
+            clearTimeout(this.saveTimer);
+            this.saveTimer = setTimeout(function () {
+                var keys = Object.keys(self.cache);
+                if (keys.length > 800) {
+                    keys.sort(function (a, b) { return self.cache[a].t - self.cache[b].t; });
+                    keys.slice(0, keys.length - 600).forEach(function (k) { delete self.cache[k]; });
+                }
+                try { localStorage.setItem(self.CACHE_KEY, JSON.stringify(self.cache)); } catch (e) { }
+            }, 1000);
+        },
+
+        /* Разбор названий раздач */
+        resolution: function (item) {
+            var info = item.Info || {};
+            if (info.quality) return info.quality;
+
+            var t = item.Title || '';
+            if (/\b(2160p|4k|uhd)\b/i.test(t)) return 2160;
+            if (/\b(1080[pi]|fhd)\b/i.test(t)) return 1080;
+            if (/\b720p\b/i.test(t)) return 720;
+            if (/\b(480p|576p|dvdrip|satrip|tvrip|vhsrip)\b/i.test(t)) return 480;
+            return 0;
+        },
+
+        isCam: function (item) {
+            return /\b(cam|camrip|hdcam|ts|hdts|telesync|tc|telecine|screener|scr)\b/i.test(item.Title || '');
+        },
+
+        best: function (results, card) {
+            var self = this;
+            var year = parseInt(cardYear(card), 10);
+            var res = 0;
+            var cam = false;
+            var any = false;
+
+            results.forEach(function (item) {
+                var title = item.Title || '';
+
+                // Чужие раздачи с другим годом выпуска отбрасываем
+                if (year) {
+                    var years = title.match(/\b(19[2-9]\d|20[0-4]\d)\b/g);
+                    if (years && !years.some(function (y) { return Math.abs(parseInt(y, 10) - year) <= 1; })) return;
+                }
+
+                if (item.Seeders === 0 && results.length > 5) return;
+
+                any = true;
+
+                if (self.isCam(item)) { cam = true; return; }
+
+                var r = self.resolution(item);
+                if (r > res) res = r;
+            });
+
+            if (res >= 2160) return '4K';
+            if (res >= 1080) return 'FHD';
+            if (res >= 720) return 'HD';
+            if (res > 0) return 'SD';
+            if (cam && any) return 'CamRip';
+            return '';
+        },
+
+        fetch: function (card, done) {
+            var p = this.parser();
+            if (!p) return done('');
+
+            var title = card.title || card.name || '';
+            var original = card.original_title || card.original_name || title;
+            var year = cardYear(card);
+
+            var url = p.url + '/api/v2.0/indexers/all/results?apikey=' + encodeURIComponent(p.key) +
+                '&Query=' + encodeURIComponent(original || title) +
+                '&title=' + encodeURIComponent(title) +
+                '&title_original=' + encodeURIComponent(original) +
+                '&year=' + encodeURIComponent(year || '0000') +
+                '&is_serial=' + (isSeries(card) ? '2' : '1') +
+                '&Category[]=' + (isSeries(card) ? '5000' : '2000');
+
+            var self = this;
+            var finished = false;
+            var finish = function (q) { if (finished) return; finished = true; done(q); };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.timeout = 15000;
+            xhr.onload = function () {
+                if (xhr.status !== 200) return finish(null);
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    finish(self.best(json.Results || [], card));
+                } catch (e) { finish(null); }
+            };
+            xhr.onerror = xhr.ontimeout = function () { finish(null); };
+            xhr.send();
+        },
+
+        pump: function () {
+            var self = this;
+
+            while (this.active < this.MAX_PARALLEL && this.queue.length) {
+                var card = this.queue.shift();
+                var key = this.key(card);
+
+                this.active++;
+
+                (function (card, key) {
+                    self.fetch(card, function (q) {
+                        self.active--;
+
+                        // null — ошибка сети/парсера: не кешируем, просто без бейджа
+                        if (q !== null) self.store(card, q);
+
+                        var cbs = self.waiting[key] || [];
+                        delete self.waiting[key];
+                        cbs.forEach(function (cb) { try { cb(q || ''); } catch (e) { } });
+
+                        self.pump();
+                    });
+                })(card, key);
+            }
+        },
+
+        get: function (card, cb) {
+            if (!card || !card.id || !this.enabled()) return;
+
+            var q = this.cached(card);
+            if (q !== undefined) { if (q) cb(q); return; }
+
+            var key = this.key(card);
+
+            if (this.waiting[key]) { this.waiting[key].push(function (v) { if (v) cb(v); }); return; }
+
+            this.waiting[key] = [function (v) { if (v) cb(v); }];
+            this.queue.push(card);
+            this.pump();
+        },
+
+        // Запрос — только когда карточка попала на экран
+        watch: function (el, card, cb) {
+            var self = this;
+            if (!this.enabled()) return;
+
+            var q = this.cached(card);
+            if (q !== undefined) { if (q) cb(q); return; }
+
+            el.mobui_quality_job = function () { self.get(card, cb); };
+
+            if (this.observer) this.observer.observe(el);
+            else el.mobui_quality_job();
         }
     };
 
@@ -948,6 +1173,11 @@
                 onTap(slide.find('.mobui-hero__add'), function () { openCard(card); });
 
                 self.state(slide, card);
+
+                if (!cardQuality(card)) Quality.get(card, function (quality) {
+                    var b = slide.find('.mobui-hero__badges');
+                    if (!b.find('.mobui-badge--q').length) b.append(badge(quality, 'mobui-badge--big mobui-badge--q'));
+                });
 
                 track.append(slide);
                 dots.append('<div class="mobui-hero__dot' + (i === 0 ? ' active' : '') + '"></div>');
@@ -1183,6 +1413,12 @@
                 param: { name: 'mobui_profile_name', type: 'input', values: '', default: '', placeholder: 'Lampa' },
                 field: { name: t('profile_name'), description: t('profile_name_descr') },
                 onChange: function () { Header.updateProfile(); }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
+                param: { name: 'mobui_quality', type: 'trigger', default: true },
+                field: { name: t('quality'), description: t('quality_descr') }
             });
         },
 
@@ -1503,7 +1739,7 @@
 
         StatusBar.init();
 
-        var parts = [Bg, Header, Notify, TabBar, Drawer, Cards, Hero, Settings, Search];
+        var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

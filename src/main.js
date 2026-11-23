@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.3';
+    var VERSION = '0.1.4';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -1108,6 +1108,29 @@
     var Settings = {
         init: function () {
             var self = this;
+
+            // Lampa на узком экране закрывает настройки быстрым свайпом вниз (там это шторка снизу).
+            // У нас панель справа: ловим этот жест (класс animate-down) и не даём закрыть панель
+            var settingsEl = document.querySelector('.settings');
+            var blockBack = 0;
+
+            if (settingsEl && window.MutationObserver) {
+                new MutationObserver(function () {
+                    if (settingsEl.classList.contains('animate-down')) {
+                        settingsEl.classList.remove('animate-down');
+                        blockBack = Date.now() + 500;
+                    }
+                }).observe(settingsEl, { attributes: true, attributeFilter: ['class'] });
+
+                var back = Lampa.Controller.back;
+                Lampa.Controller.back = function () {
+                    if (Date.now() < blockBack && document.body.classList.contains('settings--open')) {
+                        blockBack = 0;
+                        return;
+                    }
+                    return back.apply(this, arguments);
+                };
+            }
 
             Lampa.Settings.listener.follow('open', function (e) {
                 if (e.name === 'main') setTimeout(function () { self.decorate(e.body || $('.settings__body')); }, 0);

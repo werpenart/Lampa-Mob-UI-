@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.19';
+    var VERSION = '0.1.20';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -427,10 +427,10 @@
                         '<div class="mobui-edit">' +
                             '<div class="mobui-edit__head">' + esc(t('edit_menu')) + '</div>' +
                             '<div class="mobui-edit__list"></div>' +
-                        '</div>' +
-                        '<div class="mobui-edit__buttons">' +
-                            '<div class="mobui-btn mobui-btn--ghost mobui-edit__reset">' + esc(t('reset')) + '</div>' +
-                            '<div class="mobui-btn mobui-btn--white mobui-edit__done">' + esc(t('done')) + '</div>' +
+                            '<div class="mobui-edit__buttons">' +
+                                '<div class="mobui-btn mobui-btn--ghost mobui-edit__reset">' + esc(t('reset')) + '</div>' +
+                                '<div class="mobui-btn mobui-btn--white mobui-edit__done">' + esc(t('done')) + '</div>' +
+                            '</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>'

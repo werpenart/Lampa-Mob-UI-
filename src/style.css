@@ -783,7 +783,7 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
     width: 296px;
     max-width: 86vw;
     box-sizing: border-box;
-    padding: calc(var(--mu-safe-top) + 12px) 8px calc(var(--mu-safe-bottom) + 16px);
+    padding: var(--mu-safe-top) 8px calc(var(--mu-safe-bottom) + 16px);
     border-right: 1px solid var(--mu-glass-border);
     background: var(--mu-glass);
     -webkit-backdrop-filter: blur(32px);
@@ -892,12 +892,18 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
 
 /* --- Режим редактирования --- */
 
-.mobui-edit,
-.mobui-edit__buttons { display: none; }
+.mobui-edit { display: none; }
 
 .mobui-drawer.editing .mobui-drawer__body { display: none; }
 .mobui-drawer.editing .mobui-edit { display: flex; }
-.mobui-drawer.editing .mobui-edit__buttons { display: flex; }
+
+/* Перетаскиваемый пункт шире списка на 4px с каждой стороны (как в макете) —
+   расширяем область прокрутки, чтобы его не обрезало */
+.mobui-edit {
+    margin: 0 -4px;
+    padding: 0 4px;
+}
+
 
 .mobui-edit__head {
     padding: 11px 16px;
@@ -973,9 +979,12 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
 
 .mobui-edit-item.dragging .mobui-edit-item__handle { cursor: grabbing; }
 
+/* Кнопки сразу под списком, через 24px (как в макете) */
 .mobui-edit__buttons {
+    display: flex;
     flex-shrink: 0;
-    padding: 16px 16px 0;
+    margin-top: 12px;
+    padding: 0 16px 24px;
     gap: 16px;
     align-items: center;
 }

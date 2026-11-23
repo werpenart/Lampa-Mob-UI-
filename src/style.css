@@ -490,10 +490,10 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
 }
 
 /* Тень из макета (hero-shadow): отдельный блок 325×166 под нижней частью постера,
-   отступы 13px слева, 16px справа и 4px снизу, тень 0 8 24 / 56% */
+   отступы по 16px слева и справа, 4px снизу, тень 0 8 24 / 56% */
 .mobui-hero__shadow {
     position: absolute;
-    left: 13px;
+    left: 16px;
     right: 16px;
     bottom: 4px;
     height: 31.2%;

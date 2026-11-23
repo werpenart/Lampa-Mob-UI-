@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.11';
+    var VERSION = '0.1.12';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Лучшее качество из торрентов (JacRed)' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Найкраща якість із торрентів (JacRed)' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Best quality from torrents (JacRed)' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Alloha, CUB, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — CUB и JacRed' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Alloha, CUB, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — CUB і JacRed' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Alloha, CUB, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — CUB and JacRed' }
     };
 
     function lang() {
@@ -930,6 +930,13 @@
             return (isSeries(card) ? 'tv' : 'movie') + '_' + card.id;
         },
 
+        // Сменился токен — забываем пустые результаты, чтобы перепроверить с Alloha
+        reset: function () {
+            var self = this;
+            Object.keys(this.cache).forEach(function (k) { if (!self.cache[k].q) delete self.cache[k]; });
+            try { localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.cache)); } catch (e) { }
+        },
+
         // Запись из кеша: показываем сразу, даже устаревшую; fresh — можно не перепроверять
         entry: function (card) {
             var c = this.cache[this.key(card)];
@@ -1051,13 +1058,72 @@
 
         // Сначала CUB: его зеркало TMDB отдаёт ту же карточку с полем release_quality
         // (как при источнике CUB). Нет поля — спрашиваем JacRed
+        // Порядок: Alloha (по TMDB ID, если задан токен) → CUB (release_quality) → JacRed
         fetch: function (card, done) {
             var self = this;
 
-            this.fetchCub(card, function (q) {
-                if (q) done(q);
-                else self.fetchJac(card, done);
+            this.fetchAlloha(card, function (q) {
+                if (q) return done(q);
+
+                self.fetchCub(card, function (q2) {
+                    if (q2) done(q2);
+                    else self.fetchJac(card, done);
+                });
             });
+        },
+
+        ALLOHA: 'https://apbugall.org',
+
+        bestAlloha: function (data) {
+            if (!data) return '';
+
+            var res = 0;
+            var uhd = data.flags && data.flags.uhd;
+
+            (data.translations || []).forEach(function (tr) {
+                if (tr.uhd) uhd = true;
+                (tr.resolutions || []).forEach(function (r) { if (r > res) res = r; });
+            });
+
+            if (uhd || res >= 2160) return '4K';
+            if (res >= 1080) return 'FHD';
+            if (res >= 720) return 'HD';
+
+            var names = [].concat(data.quality || []).concat((data.translations || []).map(function (tr) { return tr.quality || ''; })).join(' ');
+
+            if (/\b(cam|camrip|ts|telesync|tc|hdcam|hdts)\b/i.test(names)) return 'CamRip';
+            if (/2160|4k|uhd/i.test(names)) return '4K';
+            if (/1080/i.test(names)) return 'FHD';
+            if (/720/i.test(names)) return 'HD';
+            if (res > 0) return 'SD';
+
+            return '';
+        },
+
+        fetchAlloha: function (card, done) {
+            var token = (Lampa.Storage.get('mobui_alloha_token', '') + '').trim();
+            if (!token) return done('');
+
+            var self = this;
+            var url = this.ALLOHA + '/v2/movies/tmdb/' + card.id + '?category=' + (isSeries(card) ? 'serial' : 'movie');
+
+            var finished = false;
+            var finish = function (q) { if (finished) return; finished = true; done(q); };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.timeout = 10000;
+            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            xhr.setRequestHeader('Accept', 'application/json');
+            xhr.onload = function () {
+                if (xhr.status !== 200) return finish('');
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    finish(self.bestAlloha(json && json.data));
+                } catch (e) { finish(''); }
+            };
+            xhr.onerror = xhr.ontimeout = function () { finish(''); };
+            xhr.send();
         },
 
         fetchCub: function (card, done) {
@@ -1531,6 +1597,13 @@
                 param: { name: 'mobui_profile_name', type: 'input', values: '', default: '', placeholder: 'Lampa' },
                 field: { name: t('profile_name'), description: t('profile_name_descr') },
                 onChange: function () { Header.updateProfile(); }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
+                param: { name: 'mobui_alloha_token', type: 'input', values: '', default: '', placeholder: 'token' },
+                field: { name: t('alloha'), description: t('alloha_descr') },
+                onChange: function () { Quality.reset(); }
             });
 
             Lampa.SettingsApi.addParam({

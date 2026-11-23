@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.24';
+    var VERSION = '0.1.25';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -83,6 +83,12 @@
             }
         } catch (e) { }
         return '';
+    }
+
+    function hms(sec) {
+        sec = Math.max(0, Math.round(sec || 0));
+        var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+        return [h, m, s].map(function (n) { return (n < 10 ? '0' : '') + n; }).join(':');
     }
 
     function cardVote(card) {
@@ -908,6 +914,7 @@
 
             var percent = 0;
             var episode = '';
+            var times = '';
 
             try {
                 var tl = Lampa.Timeline.watched(data, true);
@@ -919,13 +926,24 @@
                         episode = metaLine(['S1', 'E' + last.ep]);
                     }
                 }
-                else if (tl) percent = tl.percent || 0;
+                else if (tl) {
+                    percent = tl.percent || 0;
+
+                    // Где остановился и сколько идёт фильм: 00:30:00 • 01:45:00
+                    if (tl.duration > 0 && tl.time > 0) times = metaLine([hms(tl.time), hms(tl.duration)]);
+                }
             } catch (e) { }
 
             // Прогресс — только у фильмов: у сериалов вместо него сезон и серия
             if (percent && !isSeries(data)) {
                 view.addClass('mobui-has-progress');
                 view.append('<div class="mobui-card mobui-progress"><div style="width:' + Math.min(100, percent) + '%"></div></div>');
+            }
+
+            if (times && percent) {
+                var meta = $(el).find('.mobui-meta');
+                meta.wrap('<div class="mobui-card mobui-meta-row"></div>');
+                meta.parent().append('<div class="mobui-time">' + times + '</div>');
             }
 
             if (episode) {

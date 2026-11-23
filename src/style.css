@@ -390,6 +390,26 @@ body.mobui .card.mobui-card-el .card__title {
 
 .mobui-meta:empty { display: none; }
 
+/* Фильм в «Продолжить просмотр»: справа от жанра и года — время */
+.mobui-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mobui-meta-row .mobui-meta { min-width: 0; }
+
+.mobui-time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font: 500 12px/14px var(--mu-mono);
+    color: #fff;
+    white-space: nowrap;
+}
+
 /* Персоны (актёры) — без бейджей, круглые фото не трогаем */
 body.mobui .card.mobui-card-el.card--collection .card__view { height: auto; }
 

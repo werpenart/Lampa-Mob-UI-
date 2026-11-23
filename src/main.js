@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.0';
+    var VERSION = '0.1.1';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -278,8 +278,21 @@
                 return;
             }
 
+            var act = Lampa.Activity.active();
+            var onMain = id === 'main' && act && act.component === 'main' && !$('body').hasClass('search--open') && !$('body').hasClass('settings--open');
+
             this.closeOverlays();
             Lampa.Controller.toggle('content');
+
+            // Уже на главной — не пересоздаём её, а просто поднимаемся наверх
+            if (onMain) {
+                var scroller = $('.activity--active .activity__body .scroll').eq(0)[0];
+                if (scroller) {
+                    try { scroller.scrollTo({ top: 0, behavior: 'smooth' }); }
+                    catch (e) { scroller.scrollTop = 0; }
+                }
+                return;
+            }
 
             var item = $('.menu .menu__item[data-action="' + id + '"]').eq(0);
 
@@ -683,6 +696,7 @@
 
             if (root.classList && root.classList.contains('items-line')) this.line(root);
             if (root.classList && root.classList.contains('card')) this.card(root);
+            if (root.classList && root.classList.contains('items-line__more')) this.more(root);
 
             if (root.querySelectorAll) {
                 var lines = root.querySelectorAll('.items-line');
@@ -690,7 +704,24 @@
 
                 var cards = root.querySelectorAll('.card');
                 for (var j = 0; j < cards.length; j++) this.card(cards[j]);
+
+                var mores = root.querySelectorAll('.items-line__more');
+                for (var k = 0; k < mores.length; k++) this.more(mores[k]);
             }
+        },
+
+        more: function (el) {
+            var more = $(el);
+            if (!more.find('.mobui-chevron').length) more.append('<span class="mobui-chevron">' + icon('chevron-right') + '</span>');
+        },
+
+        // Ставит «Продолжить просмотр» сразу после карусели
+        moveWide: function (body) {
+            var hero = body.children('.mobui-hero');
+            if (!hero.length) return;
+
+            var wide = body.children('.items-line.mobui-line--wide');
+            if (wide.length) hero.after(wide);
         },
 
         isWide: function (el) {
@@ -706,10 +737,10 @@
                 el.classList.add('mobui-line--wide');
                 $(el).find('.card').each(function () { this.mobui_card = false; $(this).find('.mobui-card').remove(); });
                 this.scan(el);
-            }
 
-            var more = $(el).find('.items-line__more').eq(0);
-            if (more.length && !more.find('.mobui-chevron').length) more.append('<span class="mobui-chevron">' + icon('chevron-right') + '</span>');
+                var self = this;
+                setTimeout(function () { self.moveWide($(el).parent()); }, 0);
+            }
         },
 
         card: function (el) {
@@ -812,7 +843,7 @@
                 if (body.length && line.length && line.find('.card').length >= 3) {
                     if (!body.children('.mobui-hero').length) self.build(body, line);
                 }
-                else if (tries++ < 60) setTimeout(check, 250);
+                else if (tries++ < 300) setTimeout(check, 50);
             };
 
             check();
@@ -879,24 +910,93 @@
                 self.go(hero, $(this).index());
             });
 
-            var scrollTimer;
-            track.on('scroll', function () {
-                clearTimeout(scrollTimer);
-                scrollTimer = setTimeout(function () {
-                    var index = Math.round(track[0].scrollLeft / track[0].clientWidth);
-                    self.select(hero, index, items);
-                    self.schedule(hero);
-                }, 80);
-            });
+            this.bindSwipe(hero, track);
 
             hero.data('items', items);
+            hero.data('index', 0);
             body.prepend(hero);
 
             // Первый ряд целиком показан в карусели — прячем его, как в макете
             line.addClass('mobui-hero-source');
 
+            // «Продолжить просмотр» — сразу под каруселью, как в макете
+            Cards.moveWide(body);
+
             this.select(hero, 0, items);
             this.schedule(hero);
+        },
+
+        /* Свайп без вложенной прокрутки: трек двигается transform'ом.
+           Вложенный scroll-snap в iOS давал мигание старой отрисовки страницы */
+        bindSwipe: function (hero, track) {
+            var self = this;
+            var el = track[0];
+            var sx = 0, sy = 0, dx = 0, mode = '', width = 0;
+
+            el.addEventListener('touchstart', function (e) {
+                var t = e.touches[0];
+                sx = t.clientX; sy = t.clientY; dx = 0; mode = '';
+                width = el.clientWidth || 1;
+                clearTimeout(self.timer);
+            }, { passive: true });
+
+            el.addEventListener('touchmove', function (e) {
+                var t = e.touches[0];
+                var mx = t.clientX - sx;
+                var my = t.clientY - sy;
+
+                if (!mode) {
+                    if (Math.abs(mx) < 6 && Math.abs(my) < 6) return;
+                    mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+                    if (mode === 'x') track.addClass('dragging');
+                }
+
+                if (mode !== 'x') return;
+
+                e.preventDefault();
+                dx = mx;
+
+                var index = hero.data('index') || 0;
+                var count = track.children().length;
+                if ((index === 0 && dx > 0) || (index === count - 1 && dx < 0)) dx = dx / 3;
+
+                self.position(track, index, dx);
+            }, { passive: false });
+
+            var end = function () {
+                track.removeClass('dragging');
+
+                if (mode === 'x') {
+                    hero.data('swiped', Date.now());
+
+                    var index = hero.data('index') || 0;
+                    var count = track.children().length;
+
+                    if (dx < -width * 0.18 && index < count - 1) index++;
+                    else if (dx > width * 0.18 && index > 0) index--;
+
+                    self.go(hero, index);
+                }
+                else self.schedule(hero);
+
+                mode = '';
+                dx = 0;
+            };
+
+            el.addEventListener('touchend', end);
+            el.addEventListener('touchcancel', end);
+
+            // Тап сразу после свайпа не должен открывать карточку
+            el.addEventListener('click', function (e) {
+                if (Date.now() - (hero.data('swiped') || 0) < 350) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        },
+
+        position: function (track, index, dx) {
+            track.css('transform', 'translate3d(calc(' + (-index * 100) + '% + ' + (dx || 0) + 'px), 0, 0)');
         },
 
         state: function (slide, card) {
@@ -915,9 +1015,15 @@
         },
 
         go: function (hero, index) {
-            var track = hero.find('.mobui-hero__track')[0];
-            if (!track) return;
-            track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
+            var track = hero.find('.mobui-hero__track');
+            var count = track.children().length;
+            if (!count) return;
+
+            index = Math.max(0, Math.min(count - 1, index));
+
+            this.position(track, index, 0);
+            this.select(hero, index, hero.data('items') || []);
+            this.schedule(hero);
         },
 
         schedule: function (hero) {
@@ -1250,6 +1356,44 @@
     /* Запуск                                                              */
     /* ------------------------------------------------------------------ */
 
+    /* Статус-бар iOS: страница уходит под него, без отдельной подложки */
+    var StatusBar = {
+        color: '#0b0605',
+        init: function () {
+            var self = this;
+            var head = document.head;
+
+            var viewport = head.querySelector('meta[name="viewport"]');
+            if (viewport && viewport.content.indexOf('viewport-fit') < 0) viewport.content += ', viewport-fit=cover';
+
+            var style = head.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (!style) {
+                style = document.createElement('meta');
+                style.name = 'apple-mobile-web-app-status-bar-style';
+                head.appendChild(style);
+            }
+            style.content = 'black-translucent';
+
+            var theme = head.querySelector('meta[name="theme-color"]');
+            if (!theme) {
+                theme = document.createElement('meta');
+                theme.name = 'theme-color';
+                head.appendChild(theme);
+            }
+
+            var lock = function () {
+                if (theme.getAttribute('content') !== self.color) theme.setAttribute('content', self.color);
+            };
+
+            lock();
+
+            // Фон Lampa перекрашивает theme-color под картинку — возвращаем свой
+            if (window.MutationObserver) new MutationObserver(lock).observe(theme, { attributes: true, attributeFilter: ['content'] });
+
+            document.documentElement.style.backgroundColor = self.color;
+        }
+    };
+
     function isMobile() {
         try { if (Lampa.Platform.screen('mobile')) return true; } catch (e) { }
         return window.innerWidth <= 600 && ('ontouchstart' in window);
@@ -1270,6 +1414,8 @@
         $('head').append('<style id="mobui-style">' + CSS + '</style>');
 
         document.body.classList.add('mobui');
+
+        StatusBar.init();
 
         var parts = [Bg, Header, Notify, TabBar, Drawer, Cards, Hero, Settings, Search];
 

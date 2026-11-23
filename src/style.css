@@ -40,7 +40,7 @@ body.mobui svg { display: block; }
     transform: scaleY(-1) rotate(180deg);
     filter: blur(32px);
     opacity: 0;
-    transition: opacity 0.6s, background-image 0.6s;
+    transition: opacity 0.6s;
 }
 
 .mobui-bg__img.ready { opacity: 1; }
@@ -56,6 +56,12 @@ body.mobui .navigation-bar,
 body.mobui .head__body { display: none !important; }
 
 body.mobui .wrap { position: relative; z-index: 1; }
+
+/* Без затемняющих масок Lampa по краям прокрутки — иначе под шапкой появляется «подложка» */
+body.mobui .scroll--mask {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+}
 
 /* ---------- Общие элементы ---------- */
 
@@ -235,8 +241,31 @@ body.mobui .items-line__title {
     opacity: 1 !important;
 }
 
-body.mobui .items-line__title .items-line__icon,
-body.mobui .items-line__head .items-line__icon { display: none; }
+/* Ряды с иконками (огонёк, кубок): только текст заголовка */
+body.mobui .items-line__title .full-person {
+    display: block !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+body.mobui .items-line__title .full-person__photo { display: none !important; }
+body.mobui .items-line__title .full-person__body { padding: 0 !important; margin: 0 !important; }
+
+body.mobui .items-line__title .full-person__name {
+    font: 500 24px/32px var(--mu-sans) !important;
+    color: #fff !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+body.mobui .items-line__title { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.mobui .items-line__more { flex-shrink: 0; margin-left: 16px; }
 
 body.mobui .items-line__more {
     display: flex;
@@ -434,22 +463,21 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
 
 .mobui-hero { margin-bottom: 38px; }
 
+.mobui-hero { overflow: hidden; }
+
 .mobui-hero__track {
     display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    touch-action: pan-y;
+    transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
 }
 
-.mobui-hero__track::-webkit-scrollbar { display: none; }
+.mobui-hero__track.dragging { transition: none; }
 
 .mobui-hero__slide {
     flex: 0 0 100%;
     box-sizing: border-box;
     padding: 0 24px 24px;
-    scroll-snap-align: center;
 }
 
 .mobui-hero__poster {
@@ -475,7 +503,6 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     position: absolute;
     inset: 0;
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.48);
     box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2), inset 0 4px 16px rgba(0, 0, 0, 0.08);
     pointer-events: none;
 }
@@ -533,24 +560,28 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     height: 32px;
     box-sizing: border-box;
     border-radius: 16px;
+    border: 1px solid transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, border-color 0.15s;
 }
 
 .mobui-hero__book svg,
 .mobui-hero__add svg { width: 16px; height: 16px; }
 
-.mobui-hero__add {
+/* Подложка — только отклик на нажатие */
+.mobui-hero__book:active,
+.mobui-hero__add:active {
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.16);
 }
 
 .mobui-hero__book.on path { fill: #fff; }
-.mobui-hero__add.on { background: #fff; }
-.mobui-hero__add.on path { stroke: var(--mu-dark); }
+.mobui-hero__add.on svg { transform: rotate(45deg); }
+.mobui-hero__add svg { transition: transform 0.2s; }
 
 .mobui-hero__div { width: 1px; height: 16px; background: rgba(255, 255, 255, 0.16); }
 

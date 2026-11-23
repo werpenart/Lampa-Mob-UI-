@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.10';
+    var VERSION = '0.1.11';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -878,7 +878,7 @@
     // Лучшее качество, в котором фильм уже раздают, берётся из того же парсера,
     // что и торренты в Lampa (у Lampac это JacRed). Результат кешируется на сутки
     var Quality = {
-        CACHE_KEY: 'mobui_quality_v2',
+        CACHE_KEY: 'mobui_quality_v3',
         TTL_FOUND: 24 * 3600 * 1000,
         TTL_EMPTY: 2 * 3600 * 1000,
         KEEP: 30 * 24 * 3600 * 1000,
@@ -1049,7 +1049,36 @@
             xhr.send();
         },
 
+        // Сначала CUB: его зеркало TMDB отдаёт ту же карточку с полем release_quality
+        // (как при источнике CUB). Нет поля — спрашиваем JacRed
         fetch: function (card, done) {
+            var self = this;
+
+            this.fetchCub(card, function (q) {
+                if (q) done(q);
+                else self.fetchJac(card, done);
+            });
+        },
+
+        fetchCub: function (card, done) {
+            var url;
+
+            try {
+                var domain = Lampa.Manifest.cub_domain;
+                var email = (Lampa.Storage.get('account', '{}') || {}).email || '';
+                var lang = Lampa.Storage.field('tmdb_lang') || Lampa.Storage.get('language', 'ru');
+
+                url = Lampa.Utils.protocol() + 'tmdb.' + domain + '/3/' + (isSeries(card) ? 'tv' : 'movie') + '/' + card.id +
+                    '?api_key=' + Lampa.TMDB.key() + '&language=' + encodeURIComponent(lang) + '&email=' + encodeURIComponent(email);
+            } catch (e) { return done(''); }
+
+            this.request(url, function (json) {
+                var q = json && (json.release_quality || json.quality);
+                return typeof q === 'string' ? q.trim() : '';
+            }, function (q) { done(q || ''); });
+        },
+
+        fetchJac: function (card, done) {
             var self = this;
             var title = card.title || card.name || '';
             var original = card.original_title || card.original_name || title;

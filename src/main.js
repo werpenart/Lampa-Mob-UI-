@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.14';
+    var VERSION = '0.1.15';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -871,7 +871,11 @@
                 else if (tl) percent = tl.percent || 0;
             } catch (e) { }
 
-            if (percent) view.append('<div class="mobui-card mobui-progress"><div style="width:' + Math.min(100, percent) + '%"></div></div>');
+            // Прогресс — только у фильмов: у сериалов вместо него сезон и серия
+            if (percent && !isSeries(data)) {
+                view.addClass('mobui-has-progress');
+                view.append('<div class="mobui-card mobui-progress"><div style="width:' + Math.min(100, percent) + '%"></div></div>');
+            }
 
             if (episode) {
                 var title = $(el).find('.card__title');

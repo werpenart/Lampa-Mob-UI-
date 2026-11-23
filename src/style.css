@@ -413,13 +413,13 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     z-index: 1;
 }
 
-.mobui-line--wide .mobui-card__rating { bottom: 14px; }
+.mobui-line--wide .mobui-has-progress .mobui-card__rating { bottom: 20px; }
 
 .mobui-progress {
     position: absolute;
     left: 8px;
     right: 8px;
-    bottom: 4px;
+    bottom: 8px;
     height: 4px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.24);

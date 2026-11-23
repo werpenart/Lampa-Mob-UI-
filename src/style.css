@@ -647,7 +647,10 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
 
 .mobui-hero__pause { width: 16px; height: 16px; cursor: pointer; }
 .mobui-hero__pause svg { width: 16px; height: 16px; }
-.mobui-hero.paused .mobui-hero__pause { opacity: 0.48; }
+/* Пауза ↔ плей */
+.mobui-hero__pause svg + svg { display: none; }
+.mobui-hero.paused .mobui-hero__pause svg { display: none; }
+.mobui-hero.paused .mobui-hero__pause svg + svg { display: block; }
 
 /* ---------- Нижняя панель ---------- */
 

@@ -507,6 +507,18 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     pointer-events: none;
 }
 
+/* Обводка из макета: 1px белый 48% в режиме наложения Overlay */
+.mobui-hero__poster::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.48);
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
 .mobui-hero__badges {
     position: absolute;
     left: 20px;
@@ -608,7 +620,30 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
     cursor: pointer;
 }
 
-.mobui-hero__dot.active { width: 32px; background: #fff; }
+.mobui-hero__dot { position: relative; overflow: hidden; }
+
+.mobui-hero__dot.active { width: 32px; }
+
+/* Заполнение активной точки по времени показа слайда */
+.mobui-hero__dot::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.mobui-hero__dot.active.run::after { animation: mobui-dot-fill 7s linear forwards; }
+.mobui-hero.holding .mobui-hero__dot.active.run::after { animation-play-state: paused; }
+.mobui-hero.paused .mobui-hero__dot.active::after { width: 100%; }
+
+@keyframes mobui-dot-fill {
+    from { width: 0; }
+    to { width: 100%; }
+}
 
 .mobui-hero__pause { width: 16px; height: 16px; cursor: pointer; }
 .mobui-hero__pause svg { width: 16px; height: 16px; }

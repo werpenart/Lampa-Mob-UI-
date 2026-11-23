@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.4';
+    var VERSION = '0.1.5';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -283,13 +283,33 @@
 
             this.update();
         },
+        // Закрывает всё, что открыто поверх страниц: меню, уведомления, поиск, настройки,
+        // «Расширения», модальные окна. Идём «назад», пока не вернёмся к контенту
         closeOverlays: function () {
+            Drawer.close(true);
+            Notify.close(true);
+
             if ($('body').hasClass('search--open')) {
                 try { Lampa.Search.close(); } catch (e) { }
             }
-            if ($('body').hasClass('settings--open')) Lampa.Controller.toggle('content');
-            Drawer.close(true);
-            Notify.close(true);
+
+            for (var guard = 0; guard < 8; guard++) {
+                var name = this.controller();
+                if (!name || name === 'content' || name === 'head' || name.indexOf('mobui_') === 0) break;
+
+                Lampa.Controller.back();
+            }
+
+            if (this.controller() !== 'content') Lampa.Controller.toggle('content');
+        },
+        controller: function () {
+            try { return (Lampa.Controller.enabled() || {}).name || ''; }
+            catch (e) { return ''; }
+        },
+        // Открыто что-то поверх страниц (окно Lampa, «Расширения» и т.п.)
+        overlay: function () {
+            var name = this.controller();
+            return !!name && ['content', 'head', 'menu', 'mobui_drawer', 'mobui_sheet'].indexOf(name) < 0;
         },
         go: function (id) {
             if (id === 'search') {
@@ -307,10 +327,9 @@
             }
 
             var act = Lampa.Activity.active();
-            var onMain = id === 'main' && act && act.component === 'main' && !$('body').hasClass('search--open') && !$('body').hasClass('settings--open');
+            var onMain = id === 'main' && act && act.component === 'main' && !$('body').hasClass('search--open') && !this.overlay();
 
             this.closeOverlays();
-            Lampa.Controller.toggle('content');
 
             // Уже на главной — не пересоздаём её, а просто поднимаемся наверх
             if (onMain) {
@@ -333,6 +352,10 @@
             var body = $('body');
             if (body.hasClass('search--open')) return 'search';
             if (body.hasClass('settings--open')) return 'settings';
+
+            var ctrl = this.controller();
+            if (ctrl.indexOf('extensions') === 0 || ctrl.indexOf('settings') === 0) return 'settings';
+            if (this.overlay()) return '';
 
             var act = Lampa.Activity.active();
             var comp = act && act.component;
@@ -839,6 +862,8 @@
     /* Hero-карусель на главной                                            */
     /* ------------------------------------------------------------------ */
 
+    var SLIDE_TIME = 7000;
+
     var Hero = {
         timer: null,
         paused: false,
@@ -966,6 +991,7 @@
                 sx = t.clientX; sy = t.clientY; dx = 0; mode = '';
                 width = el.clientWidth || 1;
                 clearTimeout(self.timer);
+                hero.addClass('holding');
             }, { passive: true });
 
             el.addEventListener('touchmove', function (e) {
@@ -1057,7 +1083,17 @@
             var self = this;
             clearTimeout(this.timer);
 
+            // Заполнение активной точки идёт столько же, сколько показывается слайд
+            var dots = hero.find('.mobui-hero__dot').removeClass('run');
+            hero.removeClass('holding');
+
             if (this.paused) return;
+
+            var active = dots.filter('.active');
+            if (active.length) {
+                void active[0].offsetWidth;
+                active.addClass('run');
+            }
 
             this.timer = setTimeout(function () {
                 if (!document.body.contains(hero[0])) return;
@@ -1069,7 +1105,7 @@
                 var count = hero.find('.mobui-hero__slide').length;
                 var next = ((hero.data('index') || 0) + 1) % count;
                 self.go(hero, next);
-            }, 7000);
+            }, SLIDE_TIME);
         },
 
         resume: function () {

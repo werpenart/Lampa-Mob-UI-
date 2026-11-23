@@ -791,6 +791,10 @@ body.mobui .mobui-line--wide .card__img { opacity: 0; }
 
 body.player--viewing .mobui-tabbar,
 body.player--viewing .mobui-head,
+body.mobui-player-open .mobui-tabbar,
+body.mobui-player-open .mobui-head,
+body.mobui-player-open .mobui-drawer,
+body.mobui-player-open .mobui-sheet,
 body.mobui-drawer-open .mobui-tabbar,
 body.mobui-sheet-open .mobui-tabbar,
 body.settings--open .mobui-tabbar,

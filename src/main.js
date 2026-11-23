@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.22';
+    var VERSION = '0.1.23';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -897,6 +897,10 @@
             view.append(logo);
 
             Art.get(data, function (art) {
+                // Жанр перед годом (в истории Lampa жанров нет)
+                var meta = $(el).find('.mobui-meta');
+                if (art.genre && meta.length && !cardGenre(data)) meta.html(metaLine([art.genre, cardYear(data)])).show();
+
                 var list = art.backdrops.length ? art.backdrops : (data.backdrop_path ? [data.backdrop_path] : []);
                 if (list.length) img.attr('src', tmdbImg(list[Math.floor(Math.random() * list.length)], 'w780'));
                 if (art.logo) logo.attr('src', tmdbImg(art.logo, 'w500'));
@@ -938,7 +942,7 @@
     /* ------------------------------------------------------------------ */
 
     var Art = {
-        CACHE_KEY: 'mobui_art',
+        CACHE_KEY: 'mobui_art_v2',
         TTL: 7 * 24 * 3600 * 1000,
         cache: null,
         waiting: {},
@@ -1011,7 +1015,8 @@
 
             var self = this;
             var lang = (Lampa.Storage.field('tmdb_lang') || Lampa.Storage.get('language', 'ru') || 'ru').split(/[-_]/)[0];
-            var method = (isSeries(card) ? 'tv' : 'movie') + '/' + card.id + '/images?include_image_language=' + lang + ',en,null';
+            // Одним запросом: карточка (жанры — в истории Lampa их не хранит) + кадры и логотипы
+            var method = (isSeries(card) ? 'tv' : 'movie') + '/' + card.id + '?append_to_response=images&include_image_language=' + lang + ',en,null';
 
             var finish = function (art) {
                 var cbs = self.waiting[key] || [];
@@ -1021,13 +1026,16 @@
 
             try {
                 Lampa.Api.sources.tmdb.get(method, {}, function (json) {
+                    var images = json.images || json;
+
                     // Кадры без текста — в том порядке, как на сайте TMDB, первые три
-                    var backs = (json.backdrops || []).filter(function (b) { return !b.iso_639_1; });
-                    if (!backs.length) backs = json.backdrops || [];
+                    var backs = (images.backdrops || []).filter(function (b) { return !b.iso_639_1; });
+                    if (!backs.length) backs = images.backdrops || [];
 
                     var art = {
                         backdrops: backs.slice(0, 3).map(function (b) { return b.file_path; }),
-                        logo: self.pickLogo(json.logos || []),
+                        logo: self.pickLogo(images.logos || []),
+                        genre: json.genres && json.genres.length ? json.genres[0].name : '',
                         t: Date.now()
                     };
 
@@ -2181,6 +2189,18 @@
         Continue.register();
 
         StatusBar.init();
+
+        // Встроенный плеер Lampa: наши шапка и табы над ним не нужны
+        try {
+            var syncPlayer = function () {
+                var open = false;
+                try { open = Lampa.Player.opened(); } catch (e) { }
+                document.body.classList.toggle('mobui-player-open', !!open);
+            };
+            Lampa.Player.listener.follow('start', function () { document.body.classList.add('mobui-player-open'); });
+            Lampa.Player.listener.follow('ready', function () { document.body.classList.add('mobui-player-open'); });
+            Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
+        } catch (e) { }
 
         var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Cards, Hero, Settings, Search];
 

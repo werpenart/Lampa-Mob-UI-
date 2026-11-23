@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="episode-icon">
+<path id="icon-shape" d="M2.73196 6.02061L1 8L2.73196 9.97939C5.52084 13.1667 10.4792 13.1667 13.268 9.97939L15 8L13.268 6.02061C10.4792 2.83332 5.52084 2.83332 2.73196 6.02061Z" fill="white" stroke-width="1.5" stroke-linejoin="round" stroke="white"/>
+<circle id="icon-dot" cx="8" cy="8" r="2" fill="#120605"/>
+</g>
+</svg>

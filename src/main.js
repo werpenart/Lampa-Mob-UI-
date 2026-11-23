@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.2';
+    var VERSION = '0.1.3';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -117,6 +117,34 @@
             method: isSeries(card) ? 'tv' : 'movie',
             card: card,
             source: card.source || Lampa.Storage.field('source')
+        });
+    }
+
+    // «Смотреть»: сразу онлайн-просмотр Lampac (как кнопка «Онлайн» на странице фильма),
+    // если онлайн-плагина нет — открываем страницу фильма
+    function watchOnline(card) {
+        var hasOnline = false;
+        try { hasOnline = !!Lampa.Component.get('lampac'); } catch (e) { }
+
+        if (!hasOnline) return openCard(card);
+
+        var movie = $.extend({}, card);
+        if (!movie.title) movie.title = movie.name || movie.original_name || '';
+        if (!movie.original_title) movie.original_title = movie.original_name || movie.title;
+
+        var id = Lampa.Utils.hash(isSeries(movie) ? (movie.original_name || movie.original_title) : movie.original_title);
+        var all = Lampa.Storage.get('clarification_search', '{}') || {};
+
+        Lampa.Activity.push({
+            url: '',
+            title: Lampa.Lang.translate('title_online'),
+            component: 'lampac',
+            search: all[id] ? all[id] : movie.title,
+            search_one: movie.title,
+            search_two: movie.original_title,
+            movie: movie,
+            page: 1,
+            clarification: all[id] ? true : false
         });
     }
 
@@ -889,7 +917,7 @@
                     '</div>'
                 );
 
-                onTap(slide.find('.mobui-hero__watch'), function () { openCard(card); });
+                onTap(slide.find('.mobui-hero__watch'), function () { watchOnline(card); });
                 onTap(slide.find('.mobui-hero__poster img'), function () { openCard(card); });
                 onTap(slide.find('.mobui-hero__book'), function () { Lampa.Favorite.toggle('book', card); self.state(slide, card); });
                 onTap(slide.find('.mobui-hero__add'), function () { openCard(card); });

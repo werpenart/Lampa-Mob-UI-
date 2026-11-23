@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.1';
+    var VERSION = '0.1.2';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -892,7 +892,7 @@
                 onTap(slide.find('.mobui-hero__watch'), function () { openCard(card); });
                 onTap(slide.find('.mobui-hero__poster img'), function () { openCard(card); });
                 onTap(slide.find('.mobui-hero__book'), function () { Lampa.Favorite.toggle('book', card); self.state(slide, card); });
-                onTap(slide.find('.mobui-hero__add'), function () { Lampa.Favorite.toggle('wath', card); self.state(slide, card); });
+                onTap(slide.find('.mobui-hero__add'), function () { openCard(card); });
 
                 self.state(slide, card);
 
@@ -1003,7 +1003,6 @@
             var st = {};
             try { st = Lampa.Favorite.check(card) || {}; } catch (e) { }
             slide.find('.mobui-hero__book').toggleClass('on', !!st.book);
-            slide.find('.mobui-hero__add').toggleClass('on', !!st.wath);
         },
 
         select: function (hero, index, items) {

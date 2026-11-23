@@ -580,8 +580,6 @@ body.mobui .mobui-line--wide .card.mobui-card-el .card__view { height: 136px; }
 }
 
 .mobui-hero__book.on path { fill: #fff; }
-.mobui-hero__add.on svg { transform: rotate(45deg); }
-.mobui-hero__add svg { transition: transform 0.2s; }
 
 .mobui-hero__div { width: 1px; height: 16px; background: rgba(255, 255, 255, 0.16); }
 

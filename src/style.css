@@ -394,7 +394,8 @@ body.mobui .card.mobui-card-el .card__title {
 body.mobui .card.mobui-card-el.card--collection .card__view { height: auto; }
 
 /* Ряд, показанный в hero-карусели */
-body.mobui .items-line.mobui-hero-source { display: none !important; }
+body.mobui .items-line.mobui-hero-source,
+body.mobui .items-line.mobui-hidden-line { display: none !important; }
 
 /* --- Широкие карточки «Продолжить просмотр» --- */
 

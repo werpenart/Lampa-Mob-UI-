@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.16';
+    var VERSION = '0.1.17';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -772,6 +772,20 @@
             }
         },
 
+        // Свой ряд «Продолжить просмотр» есть — стандартный (только сериалы) на этой странице прячем
+        ownContinue: function (cardEl) {
+            var line = $(cardEl).closest('.items-line');
+            if (!line.length || line.hasClass('mobui-own-continue')) return;
+
+            line.addClass('mobui-own-continue');
+            this.hideDuplicates(line.parent());
+        },
+
+        hideDuplicates: function (body) {
+            if (!body.children('.mobui-own-continue').length) return;
+            body.children('.items-line.mobui-line--wide').not('.mobui-own-continue').addClass('mobui-hidden-line');
+        },
+
         more: function (el) {
             var more = $(el);
             if (!more.find('.mobui-chevron').length) more.append('<span class="mobui-chevron">' + icon('chevron-right') + '</span>');
@@ -782,8 +796,8 @@
             var hero = body.children('.mobui-hero');
             if (!hero.length) return;
 
-            var wide = body.children('.items-line.mobui-line--wide');
-            if (wide.length) hero.after(wide);
+            var wide = body.children('.items-line.mobui-line--wide').not('.mobui-hidden-line');
+            if (wide.length) hero.after(wide.eq(0));
         },
 
         isWide: function (el) {
@@ -801,7 +815,10 @@
                 this.scan(el);
 
                 var self = this;
-                setTimeout(function () { self.moveWide($(el).parent()); }, 0);
+                setTimeout(function () {
+                    self.hideDuplicates($(el).parent());
+                    self.moveWide($(el).parent());
+                }, 0);
             }
         },
 
@@ -813,6 +830,8 @@
 
             el.mobui_card = true;
             el.classList.add('mobui-card-el');
+
+            if (data.mobui_continue) this.ownContinue(el);
 
             var view = $(el).find('.card__view');
             var wide = $(el).closest('.mobui-line--wide').length > 0;
@@ -1267,6 +1286,57 @@
         // Запрашиваем сразу при появлении карточки, не дожидаясь прокрутки до неё
         watch: function (el, card, cb) {
             this.get(card, cb);
+        }
+    };
+
+    /* ------------------------------------------------------------------ */
+    /* «Продолжить просмотр» на главной: фильмы и сериалы                  */
+    /* ------------------------------------------------------------------ */
+
+    // В Lampa на главной этот ряд показывает только сериалы. Как в макете,
+    // собираем свой: всё из истории просмотра (кроме досмотренного и брошенного)
+    var Continue = {
+        registered: false,
+
+        register: function () {
+            if (this.registered || !Lampa.ContentRows || !Lampa.ContentRows.add) return;
+            this.registered = true;
+
+            Lampa.ContentRows.add({
+                name: 'mobui_continue',
+                title: Lampa.Lang.translate('title_continue'),
+                index: 0,
+                screen: ['main'],
+                call: function () {
+                    var results = Continue.items();
+                    if (!results.length) return;
+
+                    return function (call) {
+                        call({ results: results, title: Lampa.Lang.translate('title_continue') });
+                    };
+                }
+            });
+        },
+
+        items: function () {
+            var history = [], viewed = [], thrown = [];
+
+            try {
+                history = Lampa.Favorite.get({ type: 'history' }) || [];
+                viewed = Lampa.Favorite.get({ type: 'viewed' }) || [];
+                thrown = Lampa.Favorite.get({ type: 'thrown' }) || [];
+            } catch (e) { return []; }
+
+            var skip = {};
+            viewed.concat(thrown).forEach(function (c) { if (c) skip[c.id] = true; });
+
+            return history.filter(function (c) {
+                return c && c.id && !skip[c.id] && (c.poster_path || c.backdrop_path);
+            }).slice(0, 20).map(function (c) {
+                var card = $.extend({}, c);
+                card.mobui_continue = true;
+                return card;
+            });
         }
     };
 
@@ -1937,6 +2007,8 @@
 
         document.body.classList.add('mobui');
 
+        Continue.register();
+
         StatusBar.init();
 
         var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Cards, Hero, Settings, Search];
@@ -1951,6 +2023,8 @@
 
     function boot() {
         if (!window.Lampa || !Lampa.Listener) return setTimeout(boot, 200);
+
+        try { if (isMobile()) Continue.register(); } catch (e) { }
 
         if (window.appready) start();
         else {

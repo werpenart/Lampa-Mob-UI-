@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.28';
+    var VERSION = '0.1.29';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2190,16 +2190,9 @@
             var self = this;
             var head = document.head;
 
-            var viewport = head.querySelector('meta[name="viewport"]');
-            if (viewport && viewport.content.indexOf('viewport-fit') < 0) viewport.content += ', viewport-fit=cover';
-
-            var style = head.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-            if (!style) {
-                style = document.createElement('meta');
-                style.name = 'apple-mobile-web-app-status-bar-style';
-                head.appendChild(style);
-            }
-            style.content = 'black-translucent';
+            // Мета-теги viewport-fit и black-translucent больше не трогаем: iOS применяет их
+            // только из исходного HTML, а смена на лету в приложении с экрана «Домой»
+            // ломала раскладку и нажатия. Это делается на стороне сервера (index.html)
 
             var theme = head.querySelector('meta[name="theme-color"]');
             if (!theme) {

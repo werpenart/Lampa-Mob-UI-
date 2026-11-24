@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.32';
+    var VERSION = '0.1.33';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2194,6 +2194,83 @@
         color: '#120705',
         done: false,
 
+        // iOS, приложение с экрана «Домой» + black-translucent: страница уходит под статус-бар,
+        // но высота окна (100%, innerHeight) остаётся «экран минус статус-бар». Снизу
+        // остаётся пустая полоса. Меряем недостающую высоту и дотягиваем раскладку до низа
+        gap: 0,
+
+        // Высота видимой области для CSS: фиксированный блок top:0/bottom:0
+        // (не зависит от того, насколько мы растянули html/body)
+        viewportHeight: function () {
+            var probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:0;visibility:hidden;pointer-events:none';
+            document.documentElement.appendChild(probe);
+            var h = probe.getBoundingClientRect().height;
+            probe.parentNode.removeChild(probe);
+            return h;
+        },
+
+        // Стили отдельным тегом: Lampa перезаписывает классы у <html>
+        applyGap: function (gap) {
+            var el = document.getElementById('mobui-gap-style');
+            if (!el) {
+                el = document.createElement('style');
+                el.id = 'mobui-gap-style';
+                document.head.appendChild(el);
+            }
+
+            el.textContent = !gap ? '' :
+                'html, body { height: calc(100% + ' + gap + 'px) !important; }' +
+                '.mobui-bg { bottom: -' + gap + 'px !important; }' +
+                '.mobui-tabbar { bottom: ' + (24 - gap) + 'px !important; }' +
+                '.mobui-drawer, .mobui-sheet { bottom: -' + gap + 'px !important; }' +
+                'body.mobui .settings__content { height: calc(100% + ' + gap + 'px) !important; bottom: auto !important; }';
+        },
+
+        fixGap: function () {
+            if (!window.navigator.standalone) return;
+
+            var self = this;
+
+            this.innerGap = 0;
+
+            var measure = function () {
+                var portrait = window.innerWidth <= (self.realHeight ? self.realHeight() : window.innerHeight);
+                var full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+                var clamp = function (g) { g = Math.round(g); return g >= 20 && g <= 100 ? g : 0; };
+
+                // Высота, которую видит CSS (100%), и высота окна для JS — меряем обе
+                var gap = clamp(full - self.viewportHeight());
+                var innerGap = clamp(full - (self.realHeight ? self.realHeight() : window.innerHeight));
+
+                if (gap !== self.gap || innerGap !== self.innerGap) {
+                    self.gap = gap;
+                    self.innerGap = innerGap;
+                    self.applyGap(gap);
+                    try { window.dispatchEvent(new Event('resize')); } catch (e) { }
+                }
+            };
+
+            // Lampa считает высоты слоёв от window.innerHeight — отдаём ей полную высоту
+            try {
+                var desc = Object.getOwnPropertyDescriptor(window, 'innerHeight') || Object.getOwnPropertyDescriptor(Window.prototype, 'innerHeight');
+
+                if (desc && desc.get) {
+                    var getter = desc.get;
+                    this.realHeight = function () { return getter.call(window); };
+
+                    Object.defineProperty(window, 'innerHeight', {
+                        configurable: true,
+                        get: function () { return self.realHeight() + self.innerGap; }
+                    });
+                }
+            } catch (e) { }
+
+            measure();
+            [300, 1000, 2500].forEach(function (t) { setTimeout(measure, t); });
+            window.addEventListener('orientationchange', function () { setTimeout(measure, 400); });
+        },
+
         // Статус-бар без подложки в приложении с экрана «Домой»: страница уходит под него.
         // Делается как можно раньше, до отрисовки Lampa. После смены viewport iOS может
         // оставить страницу прокрученной — тогда фиксированные элементы видны на месте,
@@ -2319,6 +2396,7 @@
                 // Тёмный цвет фона сразу при загрузке: iOS красит им область статус-бара
                 document.documentElement.style.backgroundColor = StatusBar.color;
                 if (document.body) document.body.style.backgroundColor = StatusBar.color;
+                StatusBar.fixGap();
                 StatusBar.translucent();
                 Continue.register();
             }

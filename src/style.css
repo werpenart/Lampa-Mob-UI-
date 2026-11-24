@@ -38,7 +38,9 @@ body.mobui svg { display: block; }
 
 .mobui-bg__img {
     position: absolute;
-    inset: -64px;
+    /* С запасом: размытие гасит края картинки, и у краёв экрана (под статус-баром)
+       проступал тёмный фон страницы — выглядело как градиент сверху */
+    inset: -160px;
     background-size: cover;
     background-position: center top;
     transform: scaleY(-1) rotate(180deg);

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.25';
+    var VERSION = '0.1.26';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -899,7 +899,6 @@
             });
 
             view.prepend(img);
-            view.append('<div class="mobui-card mobui-wide-scrim"></div>');
             view.append(logo);
 
             Art.get(data, function (art) {
@@ -930,7 +929,7 @@
                     percent = tl.percent || 0;
 
                     // Где остановился и сколько идёт фильм: 00:30:00 • 01:45:00
-                    if (tl.duration > 0 && tl.time > 0) times = metaLine([hms(tl.time), hms(tl.duration)]);
+                    if (tl.time > 0) times = esc(hms(tl.time));
                 }
             } catch (e) { }
 
@@ -940,16 +939,10 @@
                 view.append('<div class="mobui-card mobui-progress"><div style="width:' + Math.min(100, percent) + '%"></div></div>');
             }
 
-            if (times && percent) {
-                var meta = $(el).find('.mobui-meta');
-                meta.wrap('<div class="mobui-card mobui-meta-row"></div>');
-                meta.parent().append('<div class="mobui-time">' + times + '</div>');
-            }
-
-            if (episode) {
-                var title = $(el).find('.card__title');
-                title.wrap('<div class="mobui-card mobui-title-row"></div>');
-                title.parent().append('<div class="mobui-episode">' + icon('episode') + '<div class="mobui-episode__text">' + episode + '</div></div>');
+            // На обложке справа, в ряд с рейтингом: глазик + где остановился (фильм) или сезон/серия
+            var watch = isSeries(data) ? episode : times;
+            if (watch) {
+                view.append('<div class="mobui-card mobui-wide-watch' + (isSeries(data) ? ' mobui-wide-watch--series' : '') + '">' + icon('episode') + '<div class="mobui-wide-watch__text">' + watch + '</div></div>');
             }
         }
     };

@@ -460,29 +460,40 @@ body.mobui .mobui-line--wide .card__img { opacity: 0; }
 
 .mobui-wide-logo.loaded { opacity: 1; }
 
-.mobui-wide-logo {
-    z-index: 3;
-    -webkit-filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.55));
-    filter: drop-shadow(0 1px 8px rgba(0, 0, 0, 0.55));
-}
+.mobui-wide-logo { z-index: 3; }
 
 /* Тёмный логотип — белый силуэт */
 .mobui-wide-logo.mobui-wide-logo--light {
-    -webkit-filter: brightness(0) invert(1) drop-shadow(0 1px 8px rgba(0, 0, 0, 0.55));
-    filter: brightness(0) invert(1) drop-shadow(0 1px 8px rgba(0, 0, 0, 0.55));
+    -webkit-filter: brightness(0) invert(1);
+    filter: brightness(0) invert(1);
 }
 
-/* Мягкое затемнение по центру кадра под логотипом */
-.mobui-wide-scrim {
+
+
+.mobui-line--wide .mobui-has-progress .mobui-card__rating { bottom: 22px; }
+
+/* Глазик и прогресс на обложке справа, по центру строки рейтинга (макет Home) */
+.mobui-wide-watch {
     position: absolute;
-    inset: 0;
-    z-index: 2;
-    border-radius: 12px;
-    background: radial-gradient(ellipse 60% 45% at 50% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0) 100%);
-    pointer-events: none;
+    right: 8px;
+    bottom: 25px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.mobui-line--wide .mobui-has-progress .mobui-card__rating { bottom: 20px; }
+.mobui-wide-watch--series { bottom: 11px; gap: 8px; }
+.mobui-wide-watch svg { width: 16px; height: 16px; }
+
+.mobui-wide-watch__text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 12px/14px var(--mu-mono);
+    color: #fff;
+    white-space: nowrap;
+}
 
 .mobui-progress {
     position: absolute;

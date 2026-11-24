@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.36';
+    var VERSION = '0.1.37';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
     };
 
     function lang() {
@@ -1890,6 +1890,13 @@
 
             Lampa.SettingsApi.addParam({
                 component: 'mobui',
+                param: { name: 'mobui_testfill', type: 'trigger', default: false },
+                field: { name: t('fill'), description: t('fill_descr') },
+                onChange: function (v) { TestFill.toggle(v === true || v === 'true'); }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
                 param: { name: 'mobui_quality', type: 'trigger', default: true },
                 field: { name: t('quality'), description: t('quality_descr') }
             });
@@ -2462,11 +2469,31 @@
             catch (e) { console.error('MobUI', 'init error', e); }
         });
 
+        var fill = Lampa.Storage.get('mobui_testfill', 'false');
+        if (fill === true || fill === 'true') TestFill.toggle(true);
+
         var diag = Lampa.Storage.get('mobui_diag', 'false');
         if (diag === true || diag === 'true') setTimeout(function () { Diag.toggle(true); }, 1500);
 
         console.log('MobUI', 'started', VERSION);
     }
+
+    // Тест: сплошной яркий фон без картинки и затемнения. Нужен, чтобы понять,
+    // чьё затемнение под статус-баром — наше или системное (iOS)
+    var TestFill = {
+        toggle: function (on) {
+            var el = document.getElementById('mobui-testfill-style');
+            if (!on) { if (el) el.remove(); return; }
+            if (!el) {
+                el = document.createElement('style');
+                el.id = 'mobui-testfill-style';
+                document.head.appendChild(el);
+            }
+            el.textContent =
+                'html, body, body.mobui, .mobui-bg { background: #ff00ff !important; }' +
+                '.mobui-bg__img, .mobui-bg__overlay { display: none !important; }';
+        }
+    };
 
     function boot() {
         if (!window.Lampa || !Lampa.Listener) return setTimeout(boot, 200);

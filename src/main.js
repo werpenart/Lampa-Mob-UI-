@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.38';
+    var VERSION = '0.1.39';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2328,15 +2328,30 @@
                 var top = Diag.env('top');
                 if (!self.ios() || top <= 0 || Math.abs(gap - top) > 4) gap = 0;
 
-                var innerGap = gap;
+                if (gap === self.gap) { pending = null; return; }
 
-                if (gap !== self.gap || innerGap !== self.innerGap) {
-                    self.gap = gap;
-                    self.innerGap = innerGap;
-                    self.applyGap(gap);
-                    try { window.dispatchEvent(new Event('resize')); } catch (e) { }
+                // iOS на мгновение отдаёт другую высоту окна (во время перерисовки после
+                // растяжки и т. п.). Если реагировать на каждый замер, растяжка включается
+                // и выключается по кругу — всё прыгает. Поэтому меняем решение только
+                // после нескольких одинаковых замеров подряд, а выключаем ещё осторожнее
+                if (pending === gap) hits++;
+                else { pending = gap; hits = 1; }
+
+                var need = (self.gap && !gap) ? 4 : 2;
+                if (hits < need) {
+                    clearTimeout(recheck);
+                    recheck = setTimeout(measure, 500);
+                    return;
                 }
+
+                pending = null;
+                self.gap = gap;
+                self.innerGap = gap;
+                self.applyGap(gap);
+                try { window.dispatchEvent(new Event('resize')); } catch (e) { }
             };
+
+            var pending = null, hits = 0, recheck;
 
             // Lampa считает высоты слоёв от window.innerHeight — отдаём ей полную высоту
             try {
@@ -2348,7 +2363,11 @@
 
                     Object.defineProperty(window, 'innerHeight', {
                         configurable: true,
-                        get: function () { return self.realHeight() + self.innerGap; }
+                        get: function () {
+                            var real = self.realHeight();
+                            // Не больше высоты экрана, даже если iOS сама отдала полное окно
+                            return Math.min(real + self.innerGap, Math.max(screen.width, screen.height, real));
+                        }
                     });
                 }
             } catch (e) { }
@@ -2363,7 +2382,6 @@
                 clearTimeout(again);
                 again = setTimeout(measure, 150);
             });
-            setInterval(measure, 3000);
         },
 
         // Статус-бар без подложки в приложении с экрана «Домой»: страница уходит под него.

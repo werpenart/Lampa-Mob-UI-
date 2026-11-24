@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.34';
+    var VERSION = '0.1.35';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2253,9 +2253,12 @@
                 var full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
                 var clamp = function (g) { g = Math.round(g); return g >= 20 && g <= 100 ? g : 0; };
 
-                // Высота, которую видит CSS (100%), и высота окна для JS — меряем обе
-                var gap = clamp(full - self.viewportHeight());
-                var innerGap = clamp(full - (self.realHeight ? self.realHeight() : window.innerHeight));
+                // Меряем по настоящей высоте окна (window.innerHeight): она не меняется от того,
+                // что мы растянули html/body. Замер по фиксированному блоку после растяжки
+                // давал 0 и сбрасывал исправление (на iPhone: экран 956, окно 894 → 62)
+                var real = self.realHeight ? self.realHeight() : window.innerHeight;
+                var gap = clamp(full - real);
+                var innerGap = gap;
 
                 if (gap !== self.gap || innerGap !== self.innerGap) {
                     self.gap = gap;

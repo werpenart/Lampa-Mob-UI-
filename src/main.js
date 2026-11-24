@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.37';
+    var VERSION = '0.1.38';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -177,12 +177,24 @@
     /* Фон                                                                 */
     /* ------------------------------------------------------------------ */
 
+    // Размытый фон рисуем через маленький canvas, а не CSS blur: в iOS размытие
+    // обрезается по краю окна и края уходят в тень — сверху это выглядело как
+    // тёмный градиент под статус-баром. Уменьшенная картинка, растянутая обратно,
+    // даёт то же размытие, но цвет доходит до самого края
     var Bg = {
         el: null,
         src: '',
+        image: null,
         init: function () {
-            this.el = $('<div class="mobui-bg"><div class="mobui-bg__img"></div><div class="mobui-bg__overlay"></div></div>');
+            var self = this;
+            this.el = $('<div class="mobui-bg"><canvas class="mobui-bg__img"></canvas><div class="mobui-bg__overlay"></div></div>');
             $('body').prepend(this.el);
+
+            var timer;
+            window.addEventListener('resize', function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () { self.draw(); }, 200);
+            });
         },
         set: function (src) {
             if (!src || src === this.src) return;
@@ -190,9 +202,47 @@
             var img = new Image();
             var self = this;
             img.onload = function () {
-                if (self.src === src) self.el.find('.mobui-bg__img').css('background-image', 'url("' + src + '")').addClass('ready');
+                if (self.src !== src) return;
+                self.image = img;
+                self.draw();
             };
             img.src = src;
+        },
+        draw: function () {
+            var img = this.image;
+            if (!img || !this.el) return;
+
+            var canvas = this.el.find('.mobui-bg__img')[0];
+            var box = canvas.getBoundingClientRect();
+            var bw = box.width || window.innerWidth;
+            var bh = box.height || window.innerHeight;
+
+            // Как background-size: cover и позиция center top
+            var iw = img.naturalWidth, ih = img.naturalHeight;
+            if (!iw || !ih) return;
+            var scale = Math.max(bw / iw, bh / ih);
+            var sw = bw / scale, sh = bh / scale;
+            var sx = (iw - sw) / 2, sy = 0;
+
+            // Уменьшение до ~1/32 ширины ≈ blur(32px), затем плавное увеличение
+            var small = document.createElement('canvas');
+            small.width = Math.max(4, Math.round(bw / 32));
+            small.height = Math.max(4, Math.round(bh / 32));
+
+            try {
+                var sc = small.getContext('2d');
+                sc.imageSmoothingEnabled = true;
+                sc.drawImage(img, sx, sy, sw, sh, 0, 0, small.width, small.height);
+
+                canvas.width = small.width * 8;
+                canvas.height = small.height * 8;
+                var c = canvas.getContext('2d');
+                c.imageSmoothingEnabled = true;
+                try { c.imageSmoothingQuality = 'high'; } catch (e) { }
+                c.drawImage(small, 0, 0, canvas.width, canvas.height);
+
+                $(canvas).addClass('ready');
+            } catch (e) { }
         }
     };
 
@@ -2306,6 +2356,14 @@
             measure();
             [300, 1000, 2500].forEach(function (t) { setTimeout(measure, t); });
             window.addEventListener('orientationchange', function () { setTimeout(measure, 400); });
+            // iOS может уменьшить окно уже после запуска (окно было во весь экран,
+            // потом стало короче на статус-бар) — перемеряем при каждом изменении
+            var again;
+            window.addEventListener('resize', function () {
+                clearTimeout(again);
+                again = setTimeout(measure, 150);
+            });
+            setInterval(measure, 3000);
         },
 
         // Статус-бар без подложки в приложении с экрана «Домой»: страница уходит под него.

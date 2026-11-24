@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.39';
+    var VERSION = '0.1.40';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2304,6 +2304,10 @@
         },
 
         fixGap: function () {
+            // Отключено: при растяжке до низа iOS сама меняет высоту окна, растяжка
+            // снимается и включается снова — интерфейс прыгает. Надёжно убрать полосу
+            // снизу плагином нельзя
+            return;
             if (!this.standalone()) return;
 
             var self = this;

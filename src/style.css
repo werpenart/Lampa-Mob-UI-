@@ -1535,3 +1535,20 @@ body.mobui .player-panel { padding-bottom: var(--mu-safe-bottom) !important; }
 /* Окна Lampa снизу (выбор, модальные) — над полоской «Домой» */
 body.mobui .selectbox__content,
 body.mobui .modal__content { padding-bottom: var(--mu-safe-bottom); }
+
+/* Диагностика экрана */
+.mobui-diag {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    top: 40%;
+    z-index: 9999;
+    margin: 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.85);
+    color: #7CFC9A;
+    font: 500 11px/16px var(--mu-mono);
+    white-space: pre-wrap;
+    word-break: break-all;
+}

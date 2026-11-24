@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.33';
+    var VERSION = '0.1.34';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
     };
 
     function lang() {
@@ -1883,6 +1883,13 @@
 
             Lampa.SettingsApi.addParam({
                 component: 'mobui',
+                param: { name: 'mobui_diag', type: 'trigger', default: false },
+                field: { name: t('diag'), description: t('diag_descr') },
+                onChange: function (v) { Diag.toggle(v === true || v === 'true'); }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
                 param: { name: 'mobui_quality', type: 'trigger', default: true },
                 field: { name: t('quality'), description: t('quality_descr') }
             });
@@ -2227,8 +2234,15 @@
                 'body.mobui .settings__content { height: calc(100% + ' + gap + 'px) !important; bottom: auto !important; }';
         },
 
+        standalone: function () {
+            if (window.navigator.standalone) return true;
+            try {
+                return ['standalone', 'fullscreen', 'minimal-ui'].some(function (m) { return window.matchMedia('(display-mode: ' + m + ')').matches; });
+            } catch (e) { return false; }
+        },
+
         fixGap: function () {
-            if (!window.navigator.standalone) return;
+            if (!this.standalone()) return;
 
             var self = this;
 
@@ -2341,6 +2355,53 @@
         }
     };
 
+    /* Диагностика экрана (настройки Mob UI): размеры окна и безопасных зон */
+    var Diag = {
+        el: null,
+
+        env: function (side) {
+            var p = document.createElement('div');
+            p.style.cssText = 'position:fixed;visibility:hidden;padding-top:env(safe-area-inset-' + side + ')';
+            document.body.appendChild(p);
+            var v = parseFloat(getComputedStyle(p).paddingTop) || 0;
+            p.parentNode.removeChild(p);
+            return v;
+        },
+
+        text: function () {
+            var tab = document.querySelector('.mobui-tabbar');
+            var vv = window.visualViewport;
+            var rows = [
+                'v ' + VERSION,
+                'standalone: nav=' + !!window.navigator.standalone + ' media=' + StatusBar.standalone(),
+                'screen: ' + screen.width + '×' + screen.height,
+                'inner: ' + window.innerWidth + '×' + window.innerHeight + (StatusBar.realHeight ? ' (real ' + StatusBar.realHeight() + ')' : ''),
+                'client: ' + document.documentElement.clientHeight + ', fixed: ' + StatusBar.viewportHeight() + (vv ? ', visual: ' + Math.round(vv.height) : ''),
+                'safe: top ' + this.env('top') + ', bottom ' + this.env('bottom'),
+                'gap: css ' + StatusBar.gap + ', js ' + (StatusBar.innerGap || 0),
+                'body: ' + Math.round(document.body.getBoundingClientRect().height) + ', tabbar bottom: ' + (tab ? Math.round(tab.getBoundingClientRect().bottom) : '-'),
+                'viewport: ' + ((document.querySelector('meta[name="viewport"]') || {}).content || '')
+            ];
+            return rows.join('\n');
+        },
+
+        toggle: function (on) {
+            if (!on) {
+                if (this.el) { this.el.remove(); this.el = null; }
+                return;
+            }
+
+            if (!this.el) {
+                this.el = $('<pre class="mobui-diag"></pre>');
+                $('body').append(this.el);
+                var self = this;
+                onTap(this.el, function () { self.el.text(self.text()); });
+            }
+
+            this.el.text(this.text());
+        }
+    };
+
     function isMobile() {
         try { if (Lampa.Platform.screen('mobile')) return true; } catch (e) { }
         return window.innerWidth <= 600 && ('ontouchstart' in window);
@@ -2384,6 +2445,9 @@
             try { part.init(); }
             catch (e) { console.error('MobUI', 'init error', e); }
         });
+
+        var diag = Lampa.Storage.get('mobui_diag', 'false');
+        if (diag === true || diag === 'true') setTimeout(function () { Diag.toggle(true); }, 1500);
 
         console.log('MobUI', 'started', VERSION);
     }

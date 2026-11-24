@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.41';
+    var VERSION = '0.1.42';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -199,14 +199,20 @@
         set: function (src) {
             if (!src || src === this.src) return;
             this.src = src;
-            var img = new Image();
             var self = this;
-            img.onload = function () {
-                if (self.src !== src) return;
-                self.image = img;
-                self.draw();
+            var load = function (cors) {
+                var img = new Image();
+                if (cors) img.crossOrigin = 'anonymous';
+                img.onload = function () {
+                    if (self.src !== src) return;
+                    self.image = img;
+                    self.draw();
+                };
+                // Сервер картинок без CORS — грузим как обычно, только без подбора цвета
+                img.onerror = function () { if (cors && self.src === src) load(false); };
+                img.src = src;
             };
-            img.src = src;
+            load(true);
         },
         draw: function () {
             var img = this.image;
@@ -243,6 +249,33 @@
 
                 $(canvas).addClass('ready');
             } catch (e) { }
+
+            this.tint(small);
+        },
+
+        // iOS рисует под статус-баром градиент цветом фона страницы (html/body), поверх
+        // шапки. Убрать его нельзя, но можно сделать его того же цвета, что и фон под ним:
+        // берём средний цвет верхней полосы размытой картинки с учётом затемнения 64%
+        tint: function (small) {
+            var color = StatusBar.color;
+            try {
+                var rows = Math.max(1, Math.round(small.height * 0.12));
+                var data = small.getContext('2d').getImageData(0, 0, small.width, rows).data;
+                var r = 0, g = 0, b = 0, n = 0;
+                for (var i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
+                var k = 0.36 / n;
+                color = 'rgb(' + Math.round(r * k) + ',' + Math.round(g * k) + ',' + Math.round(b * k) + ')';
+            } catch (e) { }
+
+            this.color = color;
+            this.paint();
+        },
+
+        paint: function () {
+            if (!this.color) return;
+            [document.documentElement, document.body].forEach(function (el) {
+                if (el) el.style.setProperty('background-color', Bg.color, 'important');
+            });
         }
     };
 

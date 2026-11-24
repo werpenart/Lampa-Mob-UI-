@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.26';
+    var VERSION = '0.1.27';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 

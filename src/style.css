@@ -475,7 +475,7 @@ body.mobui .mobui-line--wide .card__img { opacity: 0; }
 /* Глазик и прогресс на обложке справа, по центру строки рейтинга (макет Home) */
 .mobui-wide-watch {
     position: absolute;
-    right: 8px;
+    right: 12px;
     bottom: 25px;
     z-index: 3;
     display: flex;

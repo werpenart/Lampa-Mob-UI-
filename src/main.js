@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.43';
+    var VERSION = '0.1.44';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -276,6 +276,10 @@
             [document.documentElement, document.body].forEach(function (el) {
                 if (el) el.style.setProperty('background-color', Bg.color, 'important');
             });
+
+            // Непрозрачный статус-бар iOS красит цветом theme-color — ставим тот же цвет,
+            // что у фона под шапкой, чтобы статус-бар и шапка были одной полосой
+            if (StatusBar.lockTheme) StatusBar.lockTheme();
         }
     };
 
@@ -2486,13 +2490,17 @@
             }
 
             var lock = function () {
-                if (theme.getAttribute('content') !== self.color) theme.setAttribute('content', self.color);
+                // Цвет фона под шапкой, если его удалось подобрать, иначе базовый
+                var c = Bg.color || self.color;
+                if (theme.getAttribute('content') !== c) theme.setAttribute('content', c);
             };
 
             lock();
 
             // Фон Lampa перекрашивает theme-color под картинку — возвращаем свой
             if (window.MutationObserver) new MutationObserver(lock).observe(theme, { attributes: true, attributeFilter: ['content'] });
+
+            this.lockTheme = lock;
 
             document.documentElement.style.backgroundColor = self.color;
         }
@@ -2522,6 +2530,7 @@
                 'client: ' + document.documentElement.clientHeight + ', fixed: ' + StatusBar.viewportHeight() + (vv ? ', visual: ' + Math.round(vv.height) : ''),
                 'safe: top ' + this.env('top') + ', bottom ' + this.env('bottom'),
                 'gap: css ' + StatusBar.gap + ', js ' + (StatusBar.innerGap || 0),
+                'colors: page ' + getComputedStyle(document.documentElement).backgroundColor + ', theme ' + ((document.querySelector('meta[name="theme-color"]') || {}).content || '-') + ', tint ' + (Bg.color || '-'),
                 'body: ' + Math.round(document.body.getBoundingClientRect().height) + ', tabbar bottom: ' + (tab ? Math.round(tab.getBoundingClientRect().bottom) : '-'),
                 'viewport: ' + ((document.querySelector('meta[name="viewport"]') || {}).content || '')
             ];

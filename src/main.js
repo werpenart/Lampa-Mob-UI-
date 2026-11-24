@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.27';
+    var VERSION = '0.1.28';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2185,7 +2185,7 @@
 
     /* Статус-бар iOS: страница уходит под него, без отдельной подложки */
     var StatusBar = {
-        color: '#0b0605',
+        color: '#120705',
         init: function () {
             var self = this;
             var head = document.head;

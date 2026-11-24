@@ -1523,3 +1523,13 @@ body.mobui .search__results .broadcast__text {
 }
 
 .mobui-notice__descr .notice__footer { display: none; }
+
+/* ---------- Безопасные зоны iOS (страница под статус-баром) ---------- */
+
+/* Плеер Lampa: верхняя строка и панель управления не уходят под статус-бар и полоску «Домой» */
+body.mobui .player-info { padding-top: var(--mu-safe-top) !important; }
+body.mobui .player-panel { padding-bottom: var(--mu-safe-bottom) !important; }
+
+/* Окна Lampa снизу (выбор, модальные) — над полоской «Домой» */
+body.mobui .selectbox__content,
+body.mobui .modal__content { padding-bottom: var(--mu-safe-bottom); }

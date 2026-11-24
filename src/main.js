@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.44';
+    var VERSION = '0.1.45';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -190,12 +190,37 @@
             this.el = $('<div class="mobui-bg"><canvas class="mobui-bg__img"></canvas><div class="mobui-bg__overlay"></div></div>');
             $('body').prepend(this.el);
 
+            // Фон принадлежит открытой странице: на главной — текущий слайд,
+            // на странице фильма/сериала — его собственный постер
+            Lampa.Listener.follow('activity', function (e) {
+                if (e.type !== 'start') return;
+                if (e.component === 'main') self.fromHero();
+                else if (e.component === 'full') self.fromCard(e.object && e.object.card);
+            });
+
+            Lampa.Listener.follow('full', function (e) {
+                if (e.type !== 'complite' || !e.data || !e.data.movie) return;
+                var act = Lampa.Activity.active();
+                if (act && act.component === 'full') self.fromCard(e.data.movie);
+            });
+
             var timer;
             window.addEventListener('resize', function () {
                 clearTimeout(timer);
                 timer = setTimeout(function () { self.draw(); }, 200);
             });
         },
+        fromHero: function () {
+            var src = $('.mobui-hero').filter(function () { return $(this).data('bg'); }).last().data('bg');
+            if (src) this.set(src);
+        },
+
+        fromCard: function (card) {
+            if (!card) return;
+            var path = card.poster_path || card.backdrop_path;
+            if (path) this.set(tmdbImg(path, 'w500'));
+        },
+
         set: function (src) {
             if (!src || src === this.src) return;
             this.src = src;
@@ -1834,7 +1859,12 @@
             hero.data('index', index);
 
             var card = items[index];
-            if (card) Bg.set(tmdbImg(card.poster_path, 'w500'));
+            hero.data('bg', card ? tmdbImg(card.poster_path, 'w500') : '');
+
+            // Фон за слайдером меняем только на главной: на странице фильма и в других
+            // разделах слайдер продолжает жить в фоне, но фон страницы не трогает
+            var act = Lampa.Activity.active();
+            if (card && act && act.component === 'main') Bg.set(hero.data('bg'));
         },
 
         go: function (hero, index) {

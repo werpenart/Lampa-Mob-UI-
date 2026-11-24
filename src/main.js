@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.29';
+    var VERSION = '0.1.30';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар', translucent_descr: 'В приложении с экрана «Домой». Применяется после перезапуска', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар', translucent_descr: 'У застосунку з екрана «Додому». Діє після перезапуску', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar', translucent_descr: 'In the Home Screen app. Applies after restart', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
     };
 
     function lang() {
@@ -1877,6 +1877,12 @@
 
             Lampa.SettingsApi.addParam({
                 component: 'mobui',
+                param: { name: 'mobui_translucent', type: 'trigger', default: true },
+                field: { name: t('translucent'), description: t('translucent_descr') }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
                 param: { name: 'mobui_quality', type: 'trigger', default: true },
                 field: { name: t('quality'), description: t('quality_descr') }
             });
@@ -2186,13 +2192,55 @@
     /* Статус-бар iOS: страница уходит под него, без отдельной подложки */
     var StatusBar = {
         color: '#120705',
+        done: false,
+
+        // Статус-бар без подложки в приложении с экрана «Домой»: страница уходит под него.
+        // Делается как можно раньше, до отрисовки Lampa. После смены viewport iOS может
+        // оставить страницу прокрученной — тогда фиксированные элементы видны на месте,
+        // а нажатия уходят мимо и нижняя панель уезжает за край. Поэтому сбрасываем
+        // прокрутку и даём Lampa пересчитать размеры
+        translucent: function () {
+            if (this.done) return;
+            this.done = true;
+
+            var on = Lampa.Storage.get('mobui_translucent', 'true');
+            if (on === false || on === 'false') return;
+
+            var head = document.head;
+
+            var viewport = head.querySelector('meta[name="viewport"]');
+            if (viewport && viewport.content.indexOf('viewport-fit') < 0) viewport.content += ', viewport-fit=cover';
+
+            var style = head.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (!style) {
+                style = document.createElement('meta');
+                style.name = 'apple-mobile-web-app-status-bar-style';
+                head.appendChild(style);
+            }
+            style.content = 'black-translucent';
+
+            var fix = function () {
+                if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+                if (document.documentElement.scrollTop) document.documentElement.scrollTop = 0;
+                if (document.body && document.body.scrollTop) document.body.scrollTop = 0;
+            };
+
+            var relayout = function () {
+                fix();
+                try { window.dispatchEvent(new Event('resize')); } catch (e) { }
+            };
+
+            [0, 100, 400, 1000, 2500].forEach(function (t) { setTimeout(relayout, t); });
+
+            window.addEventListener('scroll', fix, { passive: true });
+            window.addEventListener('orientationchange', function () { setTimeout(relayout, 300); });
+            if (window.visualViewport) window.visualViewport.addEventListener('resize', fix);
+        },
         init: function () {
             var self = this;
             var head = document.head;
 
-            // Мета-теги viewport-fit и black-translucent больше не трогаем: iOS применяет их
-            // только из исходного HTML, а смена на лету в приложении с экрана «Домой»
-            // ломала раскладку и нажатия. Это делается на стороне сервера (index.html)
+            this.translucent();
 
             var theme = head.querySelector('meta[name="theme-color"]');
             if (!theme) {
@@ -2264,7 +2312,12 @@
     function boot() {
         if (!window.Lampa || !Lampa.Listener) return setTimeout(boot, 200);
 
-        try { if (isMobile()) Continue.register(); } catch (e) { }
+        try {
+            if (isMobile()) {
+                StatusBar.translucent();
+                Continue.register();
+            }
+        } catch (e) { }
 
         if (window.appready) start();
         else {

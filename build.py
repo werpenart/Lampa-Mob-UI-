@@ -12,7 +12,9 @@ CURRENT_COLOR = ('tab-',)
 
 
 def clean_svg(name, svg):
-    svg = re.sub(r'\s(preserveAspectRatio|overflow|style|id)="[^"]*"', '', svg)
+    svg = re.sub(r'\s(preserveAspectRatio|overflow|style)="[^"]*"', '', svg)
+    # id нужны только маскам (на них ссылается mask="url(#...)"), остальные убираем
+    svg = re.sub(r'<(?!mask\b)([a-zA-Z]+)([^>]*?)\sid="[^"]*"', r'<\1\2', svg)
     svg = re.sub(r'\sclip-path="[^"]*"', '', svg)
     svg = re.sub(r'<defs>.*?</defs>', '', svg, flags=re.S)
     svg = re.sub(r'>\s+<', '><', svg.strip())

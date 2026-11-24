@@ -220,6 +220,7 @@ body.mobui .head {
 
 .mobui-head__bell { width: 40px; height: 40px; cursor: pointer; }
 .mobui-head__bell svg { width: 40px; height: 40px; }
+/* Без новых уведомлений прячем и точку, и вырез под неё в колокольчике */
 .mobui-head__bell:not(.has-new) circle { display: none; }
 .mobui-head__avatar { cursor: pointer; font-family: var(--mu-sans); font-weight: 500; line-height: 20px; }
 

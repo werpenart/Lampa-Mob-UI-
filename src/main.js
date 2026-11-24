@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.35';
+    var VERSION = '0.1.36';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2234,6 +2234,11 @@
                 'body.mobui .settings__content { height: calc(100% + ' + gap + 'px) !important; bottom: auto !important; }';
         },
 
+        ios: function () {
+            var ua = navigator.userAgent || '';
+            return /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+        },
+
         standalone: function () {
             if (window.navigator.standalone) return true;
             try {
@@ -2258,6 +2263,14 @@
                 // давал 0 и сбрасывал исправление (на iPhone: экран 956, окно 894 → 62)
                 var real = self.realHeight ? self.realHeight() : window.innerHeight;
                 var gap = clamp(full - real);
+
+                // Это именно ошибка iOS только когда страница реально под статус-баром
+                // (safe-area сверху > 0) и не хватает ровно его высоты. Иначе (Android,
+                // iOS без viewport-fit=cover, где окно честно начинается под статус-баром)
+                // ничего не трогаем
+                var top = Diag.env('top');
+                if (!self.ios() || top <= 0 || Math.abs(gap - top) > 4) gap = 0;
+
                 var innerGap = gap;
 
                 if (gap !== self.gap || innerGap !== self.innerGap) {
@@ -2365,7 +2378,7 @@
         env: function (side) {
             var p = document.createElement('div');
             p.style.cssText = 'position:fixed;visibility:hidden;padding-top:env(safe-area-inset-' + side + ')';
-            document.body.appendChild(p);
+            (document.body || document.documentElement).appendChild(p);
             var v = parseFloat(getComputedStyle(p).paddingTop) || 0;
             p.parentNode.removeChild(p);
             return v;

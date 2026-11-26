@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.47';
+    var VERSION = '0.1.48';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -1650,6 +1650,7 @@
             var self = this;
 
             Lampa.Listener.follow('activity', function (e) {
+                if (e.component === 'main' && e.type === 'start' && self.stale) self.rebuild(e.object);
                 if (e.component === 'main' && (e.type === 'start' || e.type === 'create')) self.wait(e.object);
                 if (e.component === 'main' && e.type === 'start') self.resume();
             });
@@ -1658,6 +1659,50 @@
             if (act && act.component === 'main') this.wait(act);
 
             this.loadSeries();
+            this.loadMovies();
+
+            // Приложение на iPhone может висеть открытым днями: раз в 3 часа обновляем
+            // список, а слайдер пересобираем при следующем заходе на главную
+            setInterval(function () {
+                var was = self.signature();
+                self.loadMovies();
+                self.loadSeries();
+                setTimeout(function () { if (self.signature() !== was) self.stale = true; }, 15000);
+            }, 3 * 3600 * 1000);
+        },
+
+        stale: false,
+
+        signature: function () {
+            return this.movies.concat(this.series).map(function (c) { return c.id; }).join(',');
+        },
+
+        rebuild: function (object) {
+            this.stale = false;
+            if (!object || !object.activity) return;
+            $(object.activity.render()).find('.mobui-hero').remove();
+        },
+
+        movies: [],
+        moviesDone: false,
+
+        // Фильмы для слайдера берём прямо из TMDB («Сегодня в тренде»), а не из ряда на
+        // странице: Lampa рисует в ряду только первые несколько карточек, и слайдер
+        // получал 3 фильма. Старые фильмы из тренда не берём
+        loadMovies: function () {
+            var self = this;
+            var minYear = new Date().getFullYear() - 1;
+            try {
+                Lampa.Api.sources.tmdb.get('trending/movie/day', {}, function (json) {
+                    self.movies = (json.results || []).filter(function (c) {
+                        return c.poster_path && c.backdrop_path && parseInt(cardYear(c), 10) >= minYear;
+                    }).slice(0, 6).map(function (c) {
+                        c.source = 'tmdb';
+                        return c;
+                    });
+                    self.moviesDone = true;
+                }, function () { self.moviesDone = true; });
+            } catch (e) { this.moviesDone = true; }
         },
 
         series: [],
@@ -1707,7 +1752,7 @@
                 }
 
                 // Ждём новые сериалы (до ~2,5 с), чтобы слайдер не пересобирался потом
-                var ready = self.seriesDone || tries > 50;
+                var ready = (self.seriesDone && self.moviesDone) || tries > 50;
 
                 if (ready && body.length && line.length && line.find('.card').length >= 3) {
                     if (!body.children('.mobui-hero').length) self.build(body, line);
@@ -1753,7 +1798,7 @@
             // Только свежие релизы; если таких мало — берём ряд как есть
             var fresh = all.filter(function (d) { return parseInt(cardYear(d), 10) >= minYear; });
 
-            var movies = (fresh.length >= 3 ? fresh : all);
+            var movies = this.movies.length >= 3 ? this.movies : (fresh.length >= 3 ? fresh : all);
 
             // Чередуем: фильм, фильм, сериал… — всего до 8 слайдов
             var series = this.series.filter(function (c) {

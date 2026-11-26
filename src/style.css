@@ -1484,6 +1484,7 @@ body.mobui .search__results .broadcast__text {
     justify-content: flex-end;
     align-items: flex-start;
     overflow: hidden;
+    isolation: isolate;
 }
 
 .mobui-notice__poster img {
@@ -1492,6 +1493,18 @@ body.mobui .search__results .broadcast__text {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    /* iOS не обрезает картинку по скруглению родителя, если внутри есть размытие (рейтинг) */
+    border-radius: 7px;
+}
+
+/* Внутренний блик и тень, как в макете — поверх картинки */
+.mobui-notice__poster::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: inset 0 2px 2px rgba(255, 255, 255, 0.16), inset 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .mobui-notice__poster .mobui-rating { position: relative; z-index: 1; }

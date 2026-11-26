@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.46';
+    var VERSION = '0.1.47';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,8 +17,8 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed' },
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового' },
         en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
     };
 
@@ -399,7 +399,7 @@
         },
         updateBell: function () {
             var count = 0;
-            try { count = Lampa.Notice.count(); } catch (e) { }
+            try { count = Feed.unread(); } catch (e) { }
             this.el.find('.mobui-head__bell').toggleClass('has-new', count > 0);
         }
     };
@@ -2206,6 +2206,364 @@
     };
 
     /* ------------------------------------------------------------------ */
+    /* Лента уведомлений (вместо уведомлений CUB)                          */
+    /* ------------------------------------------------------------------ */
+
+    // Три вида событий:
+    //  1) фильм вышел в качестве (новинки проката и фильмы из закладок);
+    //  2) новый сериал вышел в качестве, если его ещё не смотрели;
+    //  3) у сериала из истории вышли новые серии после той, на которой остановились.
+    // Качество — из того же модуля, что и бейджи на постерах (Alloha + JacRed).
+    // Логика новых серий взята из плагина new_episodes (uahorizon26/series)
+    var Feed = {
+        KEY: 'mobui_feed',
+        INFO_KEY: 'mobui_feed_tv',
+        TTL: 30 * 60 * 1000,
+        GOOD: ['HD', 'FHD', '4K'],
+        data: null,
+        tvinfo: null,
+        busy: false,
+        first: true,
+
+        load: function () {
+            if (this.data) return;
+            try { this.data = JSON.parse(localStorage.getItem(this.KEY) || 'null'); } catch (e) { }
+            if (!this.data || !this.data.items) this.data = { items: {}, seen: {} };
+            try { this.tvinfo = JSON.parse(localStorage.getItem(this.INFO_KEY) || '{}') || {}; } catch (e) { this.tvinfo = {}; }
+        },
+
+        save: function () {
+            var items = this.data.items;
+            var keys = Object.keys(items);
+            if (keys.length > 60) {
+                keys.sort(function (a, b) { return items[b].time - items[a].time; });
+                keys.slice(60).forEach(function (k) { delete items[k]; });
+            }
+            try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { }
+            try { localStorage.setItem(this.INFO_KEY, JSON.stringify(this.tvinfo)); } catch (e) { }
+        },
+
+        init: function () {
+            var self = this;
+            this.load();
+
+            setTimeout(function () { self.refresh(); }, 4000);
+            setInterval(function () { self.refresh(); }, 15 * 60 * 1000);
+
+            // После просмотра серии/фильма пересчитываем (просмотренное уходит из ленты)
+            try { Lampa.Player.listener.follow('destroy', function () { setTimeout(function () { self.prune(); }, 800); }); } catch (e) { }
+        },
+
+        // Карточка без лишнего: хранится в localStorage
+        slim: function (c) {
+            return {
+                id: c.id, title: c.title, name: c.name, original_title: c.original_title, original_name: c.original_name,
+                poster_path: c.poster_path, backdrop_path: c.backdrop_path, vote_average: c.vote_average,
+                release_date: c.release_date, first_air_date: c.first_air_date, genre_ids: c.genre_ids,
+                number_of_seasons: c.number_of_seasons, source: 'tmdb'
+            };
+        },
+
+        history: function () {
+            try { return Lampa.Favorite.get({ type: 'history' }) || []; } catch (e) { return []; }
+        },
+
+        inHistory: function (card) {
+            return this.history().some(function (h) { return h.id === card.id && isSeries(h) === isSeries(card); });
+        },
+
+        started: function (card) {
+            try { return !!Lampa.Timeline.watched(card); } catch (e) { return false; }
+        },
+
+        add: function (key, item) {
+            var ex = this.data.items[key];
+            if (ex) return false;
+            item.time = Date.now();
+            this.data.items[key] = item;
+            return true;
+        },
+
+        unread: function () {
+            var self = this;
+            this.load();
+            return Object.keys(this.data.items).filter(function (k) { return !self.data.seen[k]; }).length;
+        },
+
+        list: function () {
+            var items = this.data.items;
+            // Новее — выше; найденные за одну проверку: новые серии, потом фильмы, потом сериалы
+            var rank = { episode: 0, movie: 1, series: 2 };
+            return Object.keys(items).map(function (k) { items[k].key = k; return items[k]; })
+                .sort(function (a, b) {
+                    var d = Math.floor(b.time / 600000) - Math.floor(a.time / 600000);
+                    return d || (rank[a.type] - rank[b.type]) || (b.time - a.time);
+                });
+        },
+
+        markSeen: function () {
+            var self = this;
+            Object.keys(this.data.items).forEach(function (k) { self.data.seen[k] = 1; });
+            // Старые отметки о прочтении, которых уже нет в ленте, не храним
+            Object.keys(this.data.seen).forEach(function (k) { if (!self.data.items[k]) delete self.data.seen[k]; });
+            this.save();
+            Header.updateBell();
+        },
+
+        // Убираем то, что уже смотрят
+        prune: function () {
+            var self = this;
+            var items = this.data.items;
+            Object.keys(items).forEach(function (k) {
+                var it = items[k];
+                if (it.type === 'movie' && self.started(it.card)) delete items[k];
+                if (it.type === 'series' && self.inHistory(it.card)) delete items[k];
+                if (it.type === 'episode') {
+                    var info = self.tvinfo[it.card.id];
+                    var r = info ? self.calc(it.card, info) : null;
+                    if (!r || r.last.s + 'x' + r.last.e !== it.ep) delete items[k];
+                }
+            });
+            this.save();
+            Header.updateBell();
+        },
+
+        refresh: function () {
+            if (this.busy) return;
+            this.busy = true;
+
+            var self = this;
+            var before = this.unread();
+            var jobs = 3;
+            var done = function () {
+                if (--jobs) return;
+                self.busy = false;
+                self.save();
+                self.prune();
+                var now = self.unread();
+                if (now > before) self.toast(now - before);
+                self.first = false;
+            };
+
+            this.movies(done);
+            this.series(done);
+            this.episodes(done);
+        },
+
+        tmdb: function (method, ok) {
+            try { Lampa.Api.sources.tmdb.get(method, {}, ok, function () { ok({}); }); }
+            catch (e) { ok({}); }
+        },
+
+        range: function (days) {
+            var d = new Date();
+            var to = d.toISOString().slice(0, 10);
+            d.setDate(d.getDate() - days);
+            return { from: d.toISOString().slice(0, 10), to: to };
+        },
+
+        // Ждём качество по списку карточек и добавляем те, что вышли в хорошем
+        withQuality: function (cards, onGood, done) {
+            var self = this;
+            var left = cards.length;
+            if (!left) return done();
+
+            cards.forEach(function (card) {
+                var finished = false;
+                var finish = function () { if (finished) return; finished = true; if (--left === 0) done(); };
+
+                Quality.get(card, function (q) {
+                    if (self.GOOD.indexOf(q) >= 0) onGood(card, q);
+                    finish();
+                });
+
+                // Если качество не нашлось, Quality.get колбэк не вызывает — не ждём вечно
+                setTimeout(finish, 20000);
+            });
+        },
+
+        // 1) Фильмы: новинки за ~4 месяца и фильмы из закладок
+        movies: function (done) {
+            var self = this;
+            var r = this.range(120);
+            var method = 'discover/movie?sort_by=popularity.desc&primary_release_date.gte=' + r.from +
+                '&primary_release_date.lte=' + r.to + '&vote_count.gte=30';
+
+            this.tmdb(method, function (json) {
+                var cards = (json.results || []).slice(0, 12);
+
+                try {
+                    ['book', 'wath', 'like'].forEach(function (type) {
+                        (Lampa.Favorite.get({ type: type }) || []).forEach(function (c) {
+                            if (!isSeries(c) && c.id && !cards.some(function (x) { return x.id === c.id; })) cards.push(c);
+                        });
+                    });
+                } catch (e) { }
+
+                cards = cards.filter(function (c) { return c.poster_path && !self.started(c); }).slice(0, 30);
+
+                self.withQuality(cards, function (card, q) {
+                    self.add('m' + card.id, { type: 'movie', card: self.slim(card), quality: q });
+                }, done);
+            });
+        },
+
+        // 2) Новые сериалы, которые ещё не смотрели
+        series: function (done) {
+            var self = this;
+            var r = this.range(120);
+            var method = 'discover/tv?sort_by=popularity.desc&first_air_date.gte=' + r.from +
+                '&first_air_date.lte=' + r.to + '&vote_count.gte=20&without_genres=10763,10764,10767';
+
+            this.tmdb(method, function (json) {
+                var cards = (json.results || []).filter(function (c) {
+                    return c.poster_path && !self.inHistory(c);
+                }).slice(0, 12);
+
+                self.withQuality(cards, function (card, q) {
+                    self.add('s' + card.id, { type: 'series', card: self.slim(card), quality: q });
+                }, done);
+            });
+        },
+
+        // 3) Новые серии у сериалов из истории
+        episodes: function (done) {
+            var self = this;
+            var list = this.history().filter(isSeries).slice(0, 40);
+            var need = list.filter(function (c) {
+                var i = self.tvinfo[c.id];
+                return !i || Date.now() - i.ts > self.TTL;
+            });
+
+            var idx = 0, active = 0;
+
+            var finish = function () {
+                list.forEach(function (card) {
+                    var info = self.tvinfo[card.id];
+                    var r = info ? self.calc(card, info) : null;
+                    if (!r) return;
+                    var ep = r.last.s + 'x' + r.last.e;
+                    self.add('e' + card.id + '_' + ep, { type: 'episode', card: self.slim(card), ep: ep, next: r.next, n: r.n });
+                });
+                done();
+            };
+
+            var pump = function () {
+                if (idx >= need.length && !active) return finish();
+                while (active < 3 && idx < need.length) (function (card) {
+                    idx++; active++;
+                    self.tmdb('tv/' + card.id, function (j) {
+                        if (j && j.last_episode_to_air) {
+                            self.tvinfo[card.id] = {
+                                ts: Date.now(),
+                                last: { s: j.last_episode_to_air.season_number, e: j.last_episode_to_air.episode_number },
+                                seasons: (j.seasons || []).filter(function (s) { return s.season_number > 0; })
+                                    .map(function (s) { return { n: s.season_number, c: s.episode_count || 0 }; })
+                            };
+                        }
+                        else if (self.tvinfo[card.id]) self.tvinfo[card.id].ts = Date.now();
+                        active--;
+                        pump();
+                    });
+                })(need[idx]);
+            };
+
+            pump();
+        },
+
+        seen: function (titles, s, e) {
+            for (var i = 0; i < titles.length; i++) {
+                var h = Lampa.Utils.hash([s, s > 10 ? ':' : '', e, titles[i]].join(''));
+                var v = Lampa.Timeline.view(h);
+                if (v && (v.percent > 0 || v.time > 0)) return true;
+            }
+            return false;
+        },
+
+        // Новое = вышло после последней серии, которую начинали смотреть
+        calc: function (card, info) {
+            var titles = [];
+            [card.original_title, card.original_name, card.name, card.title].forEach(function (t) { if (t && titles.indexOf(t) < 0) titles.push(t); });
+
+            var S = info.seasons.slice().sort(function (a, b) { return a.n - b.n; });
+            var L = info.last, ws = 0, we = 0, n = 0, next, i, e;
+
+            for (i = S.length - 1; i >= 0 && !ws; i--) {
+                var s = S[i];
+                if (s.n > L.s) continue;
+                var top = s.n === L.s ? L.e : s.c;
+                for (e = top; e >= 1; e--) if (this.seen(titles, s.n, e)) { ws = s.n; we = e; break; }
+            }
+
+            if (!ws) return null;
+            if (ws === L.s && we >= L.e) return null;
+
+            S.forEach(function (s) {
+                if (s.n < ws || s.n > L.s) return;
+                var from = s.n === ws ? we : 0, to = s.n === L.s ? L.e : s.c;
+                if (to > from) n += to - from;
+            });
+            if (n < 1) return null;
+
+            var cs = 0;
+            S.forEach(function (s) { if (s.n === ws) cs = s.c; });
+            if (ws === L.s || we < cs) next = { s: ws, e: we + 1 };
+            else {
+                next = { s: L.s, e: 1 };
+                for (i = 0; i < S.length; i++) if (S[i].n > ws) { next = { s: S[i].n, e: 1 }; break; }
+            }
+
+            return { n: n, next: next, last: L };
+        },
+
+        // Для листа уведомлений: в том же виде, что раньше давали уведомления Lampa
+        elements: function () {
+            return this.list().map(function (it) {
+                var card = $.extend({}, it.card);
+                var el = { card: card, time: it.time, title: card.title || card.name || '', labels: [], method: it.type === 'movie' ? 'movie' : 'tv' };
+
+                if (it.type === 'movie') { card.quality = it.quality; el.text = t('feed_movie') + ' ' + it.quality; }
+                if (it.type === 'series') { card.quality = it.quality; el.text = t('feed_series') + ' ' + it.quality; }
+                if (it.type === 'episode') {
+                    el.labels = ['S' + it.next.s, 'E' + it.next.e + (it.n > 1 ? ' +' + (it.n - 1) : '')];
+                    el.text = it.n > 1 ? t('feed_episodes') : t('feed_episode');
+                }
+                return el;
+            });
+        },
+
+        // Плашка над табами, в стиле плагина
+        toast: function (count) {
+            var busy = false;
+            try { busy = Lampa.Player.opened && Lampa.Player.opened(); } catch (e) { }
+            if (busy) return;
+
+            var items = this.list().filter(function (it) { return !Feed.data.seen[it.key]; });
+            if (!items.length) return;
+
+            var text;
+            if (count === 1) {
+                var it = items[0];
+                var name = it.card.title || it.card.name || '';
+                text = (it.type === 'episode' ? (it.n > 1 ? t('feed_episodes') : t('feed_episode')) : it.type === 'movie' ? t('feed_movie') + ' ' + it.quality : t('feed_series') + ' ' + it.quality) + ': ' + name;
+            }
+            else text = t('feed_many') + ': ' + count;
+
+            var el = $('.mobui-toast');
+            if (!el.length) {
+                el = $('<div class="mobui-toast selector">' + icon('bell') + '<div class="mobui-toast__text"></div></div>');
+                $('body').append(el);
+                onTap(el, function () { el.removeClass('show'); Notify.open(); });
+            }
+
+            el.find('.mobui-toast__text').text(text);
+            el.addClass('show');
+            clearTimeout(this.toastTimer);
+            this.toastTimer = setTimeout(function () { el.removeClass('show'); }, 6000);
+        }
+    };
+
+    /* ------------------------------------------------------------------ */
     /* Уведомления                                                         */
     /* ------------------------------------------------------------------ */
 
@@ -2246,8 +2604,7 @@
         },
 
         items: function () {
-            try { return Lampa.Notice.classes.all.items() || []; }
-            catch (e) { return []; }
+            return Feed.elements();
         },
 
         formatDate: function (time) {
@@ -2264,9 +2621,7 @@
             var items = this.items();
 
             if (!items.length) {
-                var empty = '';
-                try { empty = Lampa.Notice.classes.all.empty(); } catch (e) { }
-                list.append($('<div class="mobui-sheet__empty"></div>').append(typeof empty === 'string' ? $('<div></div>').html(empty) : empty));
+                list.append($('<div class="mobui-sheet__empty"></div>').text(t('feed_empty')));
                 return;
             }
 
@@ -2333,7 +2688,7 @@
             this.el.addClass('open');
             $('body').addClass('mobui-sheet-open');
 
-            try { Lampa.Notice.classes.all.viewed(); Lampa.Notice.drawCount(); } catch (e) { }
+            Feed.markSeen();
 
             Lampa.Controller.toggle('mobui_sheet');
         },
@@ -2694,7 +3049,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Cards, Hero, Settings, Search];
+        var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

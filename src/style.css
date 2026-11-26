@@ -1552,3 +1552,49 @@ body.mobui .modal__content { padding-bottom: var(--mu-safe-bottom); }
     white-space: pre-wrap;
     word-break: break-all;
 }
+
+/* Плашка о новых уведомлениях — над табами, в стиле таббара */
+.mobui-toast {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 96px;
+    z-index: 61;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px 6px 8px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    border: 1px solid var(--mu-glass-border);
+    background: var(--mu-glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.28));
+    color: #fff;
+    font-size: 15px;
+    line-height: 20px;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+}
+
+.mobui-toast.show {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.mobui-toast svg { width: 40px; height: 40px; flex-shrink: 0; }
+
+.mobui-toast__text {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+body.mobui-sheet-open .mobui-toast,
+body.player--viewing .mobui-toast,
+body.mobui-player-open .mobui-toast { display: none; }

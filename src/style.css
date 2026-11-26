@@ -950,8 +950,10 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
 .mobui-drawer .menu__item.mobui-active {
     position: relative;
     background: rgba(255, 255, 255, 0.08) !important;
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
+    /* Без своего размытия: меню уже размыто целиком, а вложенное размытие в iOS
+       даёт светлый ободок по краю пункта — он и выглядел как яркая обводка */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
 }
 
 /* Обводка из макета: 1px белый 24% в режиме наложения Overlay */

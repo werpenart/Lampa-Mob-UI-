@@ -1,5 +1,5 @@
 /*!
- * Lampa Mob UI — мобильный интерфейс для Lampa по макетам из Figma (файл «lampac»).
+ * Fluidity — мобильный интерфейс для Lampa по макетам из Figma (файл «lampac»).
  * https://github.com/werpenart/Lampa-Mob-UI-
  */
 (function () {
@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.45';
+    var VERSION = '0.1.46';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -59,6 +59,35 @@
         } catch (e) {
             return Lampa.TMDB.image('t/p/' + (size || 'w500') + path);
         }
+    }
+
+    // Последняя серия, на которой остановились. Lampa.Timeline.watched смотрит только
+    // первый сезон, поэтому: 1) берём то, что запомнил онлайн-плагин (сезон и серия);
+    // 2) иначе ищем самую позднюю серию с прогрессом по всем сезонам
+    function lastEpisode(card) {
+        var name = card.original_name || card.original_title || card.name;
+        if (!name) return null;
+
+        try {
+            var saved = (Lampa.Storage.get('online_watched_last', '{}') || {})[Lampa.Utils.hash(name)];
+            if (saved && saved.season && saved.episode) {
+                var t = Lampa.Timeline.watchedEpisode(card, saved.season, saved.episode, true) || {};
+                return { season: saved.season, episode: saved.episode, percent: t.percent || 0 };
+            }
+        } catch (e) { }
+
+        var best = null;
+        try {
+            var seasons = Math.min(card.number_of_seasons || 15, 40);
+            for (var s = 1; s <= seasons; s++) {
+                for (var e = 1; e <= 40; e++) {
+                    var v = Lampa.Timeline.watchedEpisode(card, s, e, true);
+                    if (v && v.percent) best = { season: s, episode: e, percent: v.percent };
+                }
+            }
+        } catch (err) { }
+
+        return best;
     }
 
     function isSeries(card) {
@@ -1031,10 +1060,10 @@
                 var tl = Lampa.Timeline.watched(data, true);
 
                 if (isSeries(data)) {
-                    if (tl && tl.length) {
-                        var last = tl[tl.length - 1];
-                        percent = last.view.percent || 0;
-                        episode = metaLine(['S1', 'E' + last.ep]);
+                    var last = lastEpisode(data);
+                    if (last) {
+                        percent = last.percent || 0;
+                        episode = metaLine(['S' + last.season, 'E' + last.episode]);
                     }
                 }
                 else if (tl) {
@@ -1627,6 +1656,36 @@
 
             var act = Lampa.Activity.active();
             if (act && act.component === 'main') this.wait(act);
+
+            this.loadSeries();
+        },
+
+        series: [],
+        seriesDone: false,
+
+        // Новые сериалы для слайдера: вышли за последние ~4 месяца, по популярности.
+        // Новости, реалити и ток-шоу не берём
+        loadSeries: function () {
+            var self = this;
+            var d = new Date();
+            var to = d.toISOString().slice(0, 10);
+            d.setDate(d.getDate() - 120);
+            var from = d.toISOString().slice(0, 10);
+
+            var method = 'discover/tv?sort_by=popularity.desc&first_air_date.gte=' + from +
+                '&first_air_date.lte=' + to + '&vote_count.gte=20&without_genres=10763,10764,10767';
+
+            try {
+                Lampa.Api.sources.tmdb.get(method, {}, function (json) {
+                    self.series = (json.results || []).filter(function (c) {
+                        return c.poster_path && c.backdrop_path;
+                    }).slice(0, 4).map(function (c) {
+                        c.source = 'tmdb';
+                        return c;
+                    });
+                    self.seriesDone = true;
+                }, function () { self.seriesDone = true; });
+            } catch (e) { this.seriesDone = true; }
         },
 
         wait: function (object) {
@@ -1647,7 +1706,10 @@
                     }).eq(0);
                 }
 
-                if (body.length && line.length && line.find('.card').length >= 3) {
+                // Ждём новые сериалы (до ~2,5 с), чтобы слайдер не пересобирался потом
+                var ready = self.seriesDone || tries > 50;
+
+                if (ready && body.length && line.length && line.find('.card').length >= 3) {
                     if (!body.children('.mobui-hero').length) self.build(body, line);
                 }
                 else if (tries++ < 400) setTimeout(check, 50);
@@ -1691,7 +1753,18 @@
             // Только свежие релизы; если таких мало — берём ряд как есть
             var fresh = all.filter(function (d) { return parseInt(cardYear(d), 10) >= minYear; });
 
-            items = (fresh.length >= 3 ? fresh : all).slice(0, 8);
+            var movies = (fresh.length >= 3 ? fresh : all);
+
+            // Чередуем: фильм, фильм, сериал… — всего до 8 слайдов
+            var series = this.series.filter(function (c) {
+                return !movies.find(function (m) { return m.id === c.id; });
+            });
+            var m = 0, t = 0;
+            while (items.length < 8 && (m < movies.length || t < series.length)) {
+                if (m < movies.length) items.push(movies[m++]);
+                if (items.length < 8 && m < movies.length) items.push(movies[m++]);
+                if (items.length < 8 && t < series.length) items.push(series[t++]);
+            }
 
             return items;
         },
@@ -1974,7 +2047,7 @@
 
             Lampa.SettingsApi.addComponent({
                 component: 'mobui',
-                name: 'Mob UI',
+                name: 'Fluidity',
                 icon: icon('s-interface')
             });
 
@@ -2063,7 +2136,7 @@
                 plugins.forEach(function (f) { parent.append(f); });
             }
 
-            // «Mob UI» — последним в основном блоке
+            // «Fluidity» — последним в основном блоке
             var own = parent.find('[data-component="mobui"]');
             if (own.length) {
                 var divider = parent.find('.mobui-settings-divider');
@@ -2536,7 +2609,7 @@
         }
     };
 
-    /* Диагностика экрана (настройки Mob UI): размеры окна и безопасных зон */
+    /* Диагностика экрана (настройки Fluidity): размеры окна и безопасных зон */
     var Diag = {
         el: null,
 
@@ -2593,10 +2666,10 @@
         if (window.mobui_started) return;
         window.mobui_started = true;
 
-        Lampa.Manifest && Lampa.Manifest.plugins && Lampa.Manifest.plugins.push && Lampa.Manifest.plugins.push({ type: 'other', name: 'Mob UI', version: VERSION });
+        Lampa.Manifest && Lampa.Manifest.plugins && Lampa.Manifest.plugins.push && Lampa.Manifest.plugins.push({ type: 'other', name: 'Fluidity', version: VERSION });
 
         if (!isMobile()) {
-            console.log('MobUI', 'not a mobile screen, skip');
+            console.log('Fluidity', 'not a mobile screen, skip');
             return;
         }
 
@@ -2625,7 +2698,7 @@
 
         parts.forEach(function (part) {
             try { part.init(); }
-            catch (e) { console.error('MobUI', 'init error', e); }
+            catch (e) { console.error('Fluidity', 'init error', e); }
         });
 
         var fill = Lampa.Storage.get('mobui_testfill', 'false');
@@ -2637,7 +2710,7 @@
         var diag = Lampa.Storage.get('mobui_diag', 'false');
         if (diag === true || diag === 'true') setTimeout(function () { Diag.toggle(true); }, 1500);
 
-        console.log('MobUI', 'started', VERSION);
+        console.log('Fluidity', 'started', VERSION);
     }
 
     // Тест: сплошной яркий фон без картинки и затемнения. Нужен, чтобы понять,

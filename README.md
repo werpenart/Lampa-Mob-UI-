@@ -1,4 +1,4 @@
-# Lampa Mob UI
+# Fluidity
 
 Мобильный интерфейс для [Lampa](https://github.com/yumata/lampa), собранный по макетам из Figma (файл «lampac»).
 Включается только на телефонах. На ТВ и ПК Lampa выглядит как обычно.

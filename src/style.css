@@ -956,14 +956,15 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
     backdrop-filter: none;
 }
 
-/* Обводка из макета: 1px белый 24% в режиме наложения Overlay */
+/* Обводка из макета — 1px белый 24% в режиме Overlay. iOS в меню этот режим не
+   применяет и рисует обычные 24% (ярко-серая линия). Поэтому без режима наложения,
+   а сразу цветом, который Overlay даёт на тёмном фоне меню: около 6% белого */
 .mobui-drawer .menu__item.mobui-active::before {
     content: '';
     position: absolute;
     inset: -1px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    mix-blend-mode: overlay;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     pointer-events: none;
 }
 

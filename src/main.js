@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.48';
+    var VERSION = '0.1.49';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2250,6 +2250,49 @@
         }
     };
 
+    // Защита от ложных нажатий при прокрутке. iOS отдаёт click, если палец почти
+    // не сдвинулся, а также когда касанием останавливают инерцию прокрутки — и карточка
+    // открывается сама. Гасим такой click до того, как его увидит Lampa:
+    //  - палец за касание сдвинулся больше чем на 10px;
+    //  - касание пришлось на прокрутку, которая ещё идёт (инерция), или сразу после свайпа
+    var TapGuard = {
+        init: function () {
+            var sx = 0, sy = 0, moved = false, block = false;
+            var lastScroll = 0, lastSwipe = 0, touchEnd = 0;
+            var opt = { capture: true, passive: true };
+
+            document.addEventListener('scroll', function () { lastScroll = Date.now(); }, opt);
+
+            document.addEventListener('touchstart', function (e) {
+                var p = e.touches && e.touches[0];
+                if (!p) return;
+                var now = Date.now();
+                sx = p.clientX; sy = p.clientY; moved = false;
+                block = now - lastScroll < 120 || now - lastSwipe < 300;
+            }, opt);
+
+            document.addEventListener('touchmove', function (e) {
+                var p = e.touches && e.touches[0];
+                if (!p || moved) return;
+                if (Math.abs(p.clientX - sx) > 10 || Math.abs(p.clientY - sy) > 10) moved = true;
+            }, opt);
+
+            document.addEventListener('touchend', function () {
+                touchEnd = Date.now();
+                if (moved) { block = true; lastSwipe = touchEnd; }
+            }, opt);
+
+            window.addEventListener('click', function (e) {
+                if (!block || Date.now() - touchEnd > 700) return;
+                // Поля ввода не трогаем: им нужен фокус
+                if (e.target && e.target.closest && e.target.closest('input, textarea')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }, true);
+        }
+    };
+
     /* ------------------------------------------------------------------ */
     /* Лента уведомлений (вместо уведомлений CUB)                          */
     /* ------------------------------------------------------------------ */
@@ -3094,7 +3137,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
+        var parts = [TapGuard, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

@@ -273,6 +273,9 @@ body.mobui .items-line__title .full-person__name {
 body.mobui .items-line__title { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.mobui .items-line__more { flex-shrink: 0; margin-left: 16px; }
 
+/* «Ещё» в конце ряда дублирует кнопку в заголовке */
+body.mobui .items-line .card-more { display: none !important; }
+
 body.mobui .items-line__more {
     display: flex;
     align-items: center;

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.51';
+    var VERSION = '0.1.52';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2794,6 +2794,14 @@
                         '</div>' +
                     '</div>'
                 );
+
+                // Качество, если его нет в записи (сериал в «Продолжить» и т. п.) — подтягиваем
+                if (card && !cardQuality(card)) {
+                    Quality.get(card, function (q) {
+                        var box = item.find('.mobui-notice__badges');
+                        if (q && !box.find('.mobui-badge--q').length) box.append(badge(q, 'mobui-badge--q'));
+                    });
+                }
 
                 item.find('.mobui-notice__title').html(translateObj(element.title));
                 item.find('.mobui-notice__descr').html(translateObj(element.text));

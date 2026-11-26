@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.49';
+    var VERSION = '0.1.50';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -19,7 +19,7 @@
     var I18N = {
         ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового' },
         uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed' }
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed', feed_movie: 'Out in', feed_series: 'New series in', feed_episode: 'New episode', feed_episodes: 'New episodes', feed_many: 'New notifications', feed_empty: 'Nothing new yet' }
     };
 
     function lang() {
@@ -28,7 +28,7 @@
     }
 
     function t(key) {
-        return I18N[lang()][key] || I18N.en[key] || key;
+        return I18N[lang()][key] || I18N.en[key] || I18N.ru[key] || key;
     }
 
     function icon(name) {
@@ -400,7 +400,16 @@
         updateBell: function () {
             var count = 0;
             try { count = Feed.unread(); } catch (e) { }
-            this.el.find('.mobui-head__bell').toggleClass('has-new', count > 0);
+            var bell = this.el.find('.mobui-head__bell').toggleClass('has-new', count > 0);
+
+            // Вырез под точку: iOS не перерисовывает маску, если просто спрятать круг в ней,
+            // и колокольчик оставался «надкушенным». Поэтому маску снимаем с иконки целиком
+            var g = bell.find('[mask], [data-mask]');
+            g.each(function () {
+                if (!this.getAttribute('data-mask')) this.setAttribute('data-mask', this.getAttribute('mask'));
+                if (count > 0) this.setAttribute('mask', this.getAttribute('data-mask'));
+                else this.removeAttribute('mask');
+            });
         }
     };
 
@@ -2304,7 +2313,7 @@
     // Качество — из того же модуля, что и бейджи на постерах (Alloha + JacRed).
     // Логика новых серий взята из плагина new_episodes (uahorizon26/series)
     var Feed = {
-        KEY: 'mobui_feed',
+        KEY: 'mobui_feed_v2',
         INFO_KEY: 'mobui_feed_tv',
         TTL: 30 * 60 * 1000,
         GOOD: ['HD', 'FHD', '4K'],
@@ -2316,7 +2325,9 @@
         load: function () {
             if (this.data) return;
             try { this.data = JSON.parse(localStorage.getItem(this.KEY) || 'null'); } catch (e) { }
-            if (!this.data || !this.data.items) this.data = { items: {}, seen: {} };
+            if (!this.data || !this.data.items) this.data = { items: {}, seen: {}, known: {}, base: false };
+            if (!this.data.known) this.data.known = {};
+            try { localStorage.removeItem('mobui_feed'); } catch (e) { }
             try { this.tvinfo = JSON.parse(localStorage.getItem(this.INFO_KEY) || '{}') || {}; } catch (e) { this.tvinfo = {}; }
         },
 
@@ -2327,6 +2338,8 @@
                 keys.sort(function (a, b) { return items[b].time - items[a].time; });
                 keys.slice(60).forEach(function (k) { delete items[k]; });
             }
+            var known = this.data.known, old = Date.now() - 90 * 24 * 3600 * 1000;
+            Object.keys(known).forEach(function (k) { if (known[k] < old) delete known[k]; });
             try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch (e) { }
             try { localStorage.setItem(this.INFO_KEY, JSON.stringify(this.tvinfo)); } catch (e) { }
         },
@@ -2370,6 +2383,15 @@
             item.time = Date.now();
             this.data.items[key] = item;
             return true;
+        },
+
+        // Фильм/сериал в качестве — уведомляем один раз и только о том, что появилось
+        // после первой проверки (вышел в качестве позже или новинка добавилась в список)
+        fresh: function (key, item) {
+            var known = this.data.known;
+            if (known[key]) return;
+            known[key] = Date.now();
+            if (this.data.base) this.add(key, item);
         },
 
         unread: function () {
@@ -2426,6 +2448,8 @@
             var done = function () {
                 if (--jobs) return;
                 self.busy = false;
+                // Первая проверка только запоминает, что уже есть в качестве: это не новость
+                self.data.base = true;
                 self.save();
                 self.prune();
                 var now = self.unread();
@@ -2491,7 +2515,7 @@
                 cards = cards.filter(function (c) { return c.poster_path && !self.started(c); }).slice(0, 30);
 
                 self.withQuality(cards, function (card, q) {
-                    self.add('m' + card.id, { type: 'movie', card: self.slim(card), quality: q });
+                    self.fresh('m' + card.id, { type: 'movie', card: self.slim(card), quality: q });
                 }, done);
             });
         },
@@ -2509,7 +2533,7 @@
                 }).slice(0, 12);
 
                 self.withQuality(cards, function (card, q) {
-                    self.add('s' + card.id, { type: 'series', card: self.slim(card), quality: q });
+                    self.fresh('s' + card.id, { type: 'series', card: self.slim(card), quality: q });
                 }, done);
             });
         },

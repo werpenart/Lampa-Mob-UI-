@@ -1651,6 +1651,10 @@ body.mobui .selectbox__layer {
 }
 
 body.mobui .selectbox__content {
+    /* iOS считает 100% шире окна, и правая обводка уезжала за край */
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
     box-sizing: border-box;
     max-height: calc(100% - var(--mu-safe-top) - 64px);
     border-radius: 32px 32px 0 0 !important;
@@ -1772,8 +1776,17 @@ body.mobui .card .card__view {
 body.mobui .card.mobui-press .card__view,
 body.mobui .card.mobui-card-el.mobui-press .card__view {
     transform: scale(1.04) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.56) !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.48) !important;
     z-index: 2;
+}
+
+/* Ряд прокручивается сам и обрезает всё, что выходит за его границы, — даём
+   увеличенной карточке и её тени место сверху и снизу, не меняя раскладку */
+body.mobui .items-line .scroll--horizontal {
+    padding-top: 16px !important;
+    padding-bottom: 24px !important;
+    margin-top: -16px !important;
+    margin-bottom: -24px !important;
 }
 
 body.mobui .selectbox .scroll__content { padding: 0 0 8px !important; }

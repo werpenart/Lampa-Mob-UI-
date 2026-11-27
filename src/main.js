@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.56';
+    var VERSION = '0.1.57';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2274,6 +2274,57 @@
         }
     };
 
+    // Окно выбора Lampa: кнопка закрытия как у шторки уведомлений
+    var SelectBox = {
+        init: function () {
+            var self = this;
+            if (!window.MutationObserver) return;
+            new MutationObserver(function () {
+                if (document.body.classList.contains('selectbox--open')) self.decorate();
+            }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        },
+
+        decorate: function () {
+            var head = $('.selectbox__head').eq(0);
+            if (!head.length || head.find('.mobui-sheet__close').length) return;
+            var btn = $('<div class="mobui-sheet__close">' + icon('close') + '</div>');
+            head.append(btn);
+            onTap(btn, function () { try { Lampa.Select.close(); } catch (e) { } });
+        }
+    };
+
+    // Долгое нажатие на карточку: пока палец держит её, карточка чуть увеличивается
+    // и отбрасывает тень — видно, что сейчас откроется меню действий
+    var CardPress = {
+        init: function () {
+            var timer, card = null, sx = 0, sy = 0;
+            var opt = { capture: true, passive: true };
+
+            var release = function () {
+                clearTimeout(timer);
+                if (card) card.classList.remove('mobui-press');
+                card = null;
+            };
+
+            document.addEventListener('touchstart', function (e) {
+                release();
+                var t = e.target && e.target.closest && e.target.closest('.card');
+                var p = e.touches && e.touches[0];
+                if (!t || !p) return;
+                sx = p.clientX; sy = p.clientY;
+                timer = setTimeout(function () { card = t; t.classList.add('mobui-press'); }, 200);
+            }, opt);
+
+            document.addEventListener('touchmove', function (e) {
+                var p = e.touches && e.touches[0];
+                if (p && (Math.abs(p.clientX - sx) > 10 || Math.abs(p.clientY - sy) > 10)) release();
+            }, opt);
+
+            document.addEventListener('touchend', release, opt);
+            document.addEventListener('touchcancel', release, opt);
+        }
+    };
+
     // Защита от ложных нажатий при прокрутке. iOS отдаёт click, если палец почти
     // не сдвинулся, а также когда касанием останавливают инерцию прокрутки — и карточка
     // открывается сама. Гасим такой click до того, как его увидит Lampa:
@@ -3213,7 +3264,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [TapGuard, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
+        var parts = [TapGuard, CardPress, SelectBox, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

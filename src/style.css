@@ -1641,3 +1641,140 @@ body.mobui .modal__content { padding-bottom: var(--mu-safe-bottom); }
 body.mobui-sheet-open .mobui-toast,
 body.player--viewing .mobui-toast,
 body.mobui-player-open .mobui-toast { display: none; }
+
+/* ---------- Окно выбора Lampa (долгий тап по карточке и т. п.) — как шторка уведомлений ---------- */
+
+body.mobui .selectbox__layer {
+    background: rgba(0, 0, 0, 0.64);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+
+body.mobui .selectbox__content {
+    box-sizing: border-box;
+    max-height: calc(100% - var(--mu-safe-top) - 64px);
+    border-radius: 32px 32px 0 0 !important;
+    border: 1px solid var(--mu-glass-border);
+    border-bottom: 0;
+    background: var(--mu-glass) !important;
+    -webkit-backdrop-filter: blur(32px);
+    backdrop-filter: blur(32px);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.32);
+    padding-bottom: calc(16px + var(--mu-safe-bottom));
+    font-size: 16px;
+}
+
+body.mobui .selectbox__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 16px 18px 24px !important;
+}
+
+body.mobui .selectbox__title {
+    font: 400 24px/32px var(--mu-sans) !important;
+    color: #fff;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.mobui .selectbox__head .mobui-sheet__close { flex-shrink: 0; }
+
+/* Пункты */
+body.mobui .selectbox-item {
+    margin: 0 8px;
+    padding: 12px 16px !important;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    background: transparent !important;
+    color: #fff !important;
+    transform: none !important;
+}
+
+body.mobui .selectbox-item.focus,
+body.mobui .selectbox-item:active {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #fff !important;
+}
+
+body.mobui .selectbox-item__title {
+    font: 400 16px/20px var(--mu-sans) !important;
+    color: #fff !important;
+}
+
+body.mobui .selectbox-item__subtitle {
+    margin-top: 4px !important;
+    font: 400 12px/18px var(--mu-sans) !important;
+    color: var(--mu-text-2) !important;
+    opacity: 1 !important;
+}
+
+body.mobui .selectbox-item--checkbox { padding-right: 48px !important; }
+
+/* Флажок — как в редакторе меню */
+body.mobui .selectbox-item__checkbox {
+    top: 50% !important;
+    right: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin-top: -8px;
+    box-sizing: border-box;
+    border: 1.5px solid rgba(255, 255, 255, 0.48) !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+}
+
+body.mobui .selectbox-item--checked .selectbox-item__checkbox { border-color: #fff !important; }
+
+body.mobui .selectbox-item--checked .selectbox-item__checkbox::after {
+    content: '' !important;
+    position: absolute;
+    left: 4px !important;
+    top: 1.5px !important;
+    width: 4px !important;
+    height: 7px !important;
+    border: solid #fff !important;
+    border-width: 0 2px 2px 0 !important;
+    background: none !important;
+    transform: rotate(45deg) !important;
+}
+
+body.mobui .selectbox-item__lock {
+    right: 16px !important;
+    margin-top: -10px !important;
+    opacity: 0.48 !important;
+}
+
+body.mobui .selectbox-item__lock > svg { width: 20px !important; height: 20px !important; }
+
+/* Заголовки групп («Избранное», «Статус») */
+body.mobui .selectbox .settings-param-title {
+    padding: 16px 24px 8px !important;
+    margin: 0 !important;
+}
+
+body.mobui .selectbox .settings-param-title > span {
+    font: 500 12px/14px var(--mu-mono) !important;
+    color: var(--mu-text-3) !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+/* Карточка под пальцем при долгом нажатии — чуть больше и с тенью */
+body.mobui .card .card__view {
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+body.mobui .card.mobui-press .card__view,
+body.mobui .card.mobui-card-el.mobui-press .card__view {
+    transform: scale(1.04) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.56) !important;
+    z-index: 2;
+}
+
+body.mobui .selectbox .scroll__content { padding: 0 0 8px !important; }
+body.mobui .selectbox .scroll--mask { -webkit-mask-image: none !important; mask-image: none !important; }

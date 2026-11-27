@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.58';
+    var VERSION = '0.1.59';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -2285,11 +2285,34 @@
         },
 
         decorate: function () {
-            var head = $('.selectbox__head').eq(0);
-            if (!head.length || head.find('.mobui-sheet__close').length) return;
-            var btn = $('<div class="mobui-sheet__close">' + icon('close') + '</div>');
-            head.append(btn);
-            onTap(btn, function () { try { Lampa.Select.close(); } catch (e) { } });
+            var self = this;
+            var box = $('.selectbox').eq(0);
+
+            // Пункты и замки могут дорисовываться уже после открытия
+            if (box.length && !this.watch) {
+                this.watch = new MutationObserver(function () {
+                    if (document.body.classList.contains('selectbox--open')) self.decorate();
+                });
+                this.watch.observe(box[0], { childList: true, subtree: true });
+            }
+
+            var head = box.find('.selectbox__head');
+            if (head.length && !head.find('.mobui-sheet__close').length) {
+                var btn = $('<div class="mobui-sheet__close">' + icon('close') + '</div>');
+                head.append(btn);
+                onTap(btn, function () { try { Lampa.Select.close(); } catch (e) { } });
+            }
+
+            // Флажки — как в редакторе меню, замок — из Lucide
+            box.find('.selectbox-item__checkbox').each(function () {
+                if (!this.querySelector('svg')) this.innerHTML = icon('checkbox-on') + icon('checkbox-off');
+            });
+            box.find('.selectbox-item__lock').each(function () {
+                if (!this.getAttribute('data-mobui')) {
+                    this.setAttribute('data-mobui', '1');
+                    this.innerHTML = icon('lock');
+                }
+            });
         }
     };
 

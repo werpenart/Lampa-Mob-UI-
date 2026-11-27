@@ -8,7 +8,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, 'src')
 
 # Иконки, у которых цвет задаётся из CSS (активное/неактивное состояние)
-CURRENT_COLOR = ('tab-',)
+CURRENT_COLOR = ('tab-', 'm-')
 
 
 def clean_svg(name, svg):

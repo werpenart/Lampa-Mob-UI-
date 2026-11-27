@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.55';
+    var VERSION = '0.1.56';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -610,7 +610,12 @@
                 var action = item.data('action');
                 if (action === 'edit') return;
 
-                if (action) self.active = action;
+                // Запоминаем пункт: следующая открытая страница будет «его»
+                if (action) {
+                    self.pending = action;
+                    clearTimeout(self.pendingTimer);
+                    self.pendingTimer = setTimeout(function () { self.pending = ''; }, 3000);
+                }
 
                 self.close();
             }, true);
@@ -627,8 +632,13 @@
             // Lampa сама вызывает меню (например, кнопкой «влево» с края) — открываем наше
             this.patchMenuController();
 
+            // Страница, открытая из меню, помнит свой пункт — и при возврате «назад» тоже
             Lampa.Listener.follow('activity', function (e) {
-                if (e.type === 'start' && e.component === 'main') self.active = 'main';
+                if (e.type !== 'start' || !e.object) return;
+                if (self.pending && !e.object.mobuiMenu) {
+                    e.object.mobuiMenu = self.pending;
+                    self.pending = '';
+                }
             });
 
             this.decorate();
@@ -682,8 +692,13 @@
             var menu = this.getMenu();
             if (!menu) return;
 
+            // Активен только пункт текущего раздела. На странице фильма, в поиске и т. п.
+            // не подсвечиваем ничего
             var cur = TabBar.current ? TabBar.current() : '';
-            var active = cur === 'favorite' ? 'favorite' : cur === 'main' ? 'main' : this.active;
+            var act = Lampa.Activity.active();
+            var active = '';
+            if (cur !== 'search' && cur !== 'settings' && act && act.mobuiMenu) active = act.mobuiMenu;
+            else if (cur === 'main' || cur === 'favorite') active = cur;
 
             menu.find('.menu__item').removeClass('mobui-active');
             menu.find('.menu__item[data-action="' + active + '"]').eq(0).addClass('mobui-active');

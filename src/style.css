@@ -947,28 +947,26 @@ body.keyboard-input--visible .mobui-tabbar { display: none; }
 
 .mobui-drawer .menu .menu__item.hidden { display: none !important; }
 
+/* Текущий раздел — белая плашка, тёмный текст и иконка */
 .mobui-drawer .menu__item.mobui-active {
-    position: relative;
+    background: #fff !important;
+    color: #292929 !important;
+}
+
+.mobui-drawer .menu__item.mobui-active .menu__text,
+.mobui-drawer .menu__item.mobui-active .menu__ico { color: #292929 !important; }
+.mobui-drawer .menu__item.mobui-active .menu__ico svg:not([viewBox="0 0 24 24"]) { color: #292929; }
+
+/* Lampa красит иконку в чёрный у пункта в фокусе — у нас цвет иконки = цвет текста */
+.mobui-drawer .menu__item .menu__ico [stroke] { stroke: currentColor !important; }
+
+/* Нажатие — стеклянная плашка из макета: белый 8% и тонкая обводка
+   (Overlay 24% на тёмном фоне меню даёт около 6% белого) */
+.mobui-drawer .menu__item:not(.mobui-active):active,
+.mobui-drawer .menu__item.mobui-pressed:not(.mobui-active) {
     background: rgba(255, 255, 255, 0.08) !important;
-    /* Без своего размытия: меню уже размыто целиком, а вложенное размытие в iOS
-       даёт светлый ободок по краю пункта — он и выглядел как яркая обводка */
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    border-color: rgba(255, 255, 255, 0.06);
 }
-
-/* Обводка из макета — 1px белый 24% в режиме Overlay. iOS в меню этот режим не
-   применяет и рисует обычные 24% (ярко-серая линия). Поэтому без режима наложения,
-   а сразу цветом, который Overlay даёт на тёмном фоне меню: около 6% белого */
-.mobui-drawer .menu__item.mobui-active::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    pointer-events: none;
-}
-
-.mobui-drawer .menu__item.focus:not(.mobui-active) { background: rgba(255, 255, 255, 0.04) !important; }
 
 .mobui-drawer .menu__ico {
     flex-shrink: 0;

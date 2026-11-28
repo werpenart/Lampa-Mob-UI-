@@ -242,7 +242,7 @@ body.mobui .items-line__head {
 }
 
 body.mobui .items-line__title {
-    font: 500 24px/32px var(--mu-sans) !important;
+    font: 500 20px/24px var(--mu-sans) !important;
     color: #fff;
     opacity: 1 !important;
 }
@@ -261,7 +261,7 @@ body.mobui .items-line__title .full-person__photo { display: none !important; }
 body.mobui .items-line__title .full-person__body { padding: 0 !important; margin: 0 !important; }
 
 body.mobui .items-line__title .full-person__name {
-    font: 500 24px/32px var(--mu-sans) !important;
+    font: 500 20px/24px var(--mu-sans) !important;
     color: #fff !important;
     white-space: nowrap;
     overflow: hidden;
@@ -1792,3 +1792,63 @@ body.mobui .items-line .scroll--horizontal {
 
 body.mobui .selectbox .scroll__content { padding: 0 0 8px !important; }
 body.mobui .selectbox .scroll--mask { -webkit-mask-image: none !important; mask-image: none !important; }
+
+/* ---------- Ряд актёра: плашка вместо заголовка ---------- */
+
+body.mobui .items-line__head.mobui-person-head { margin-bottom: 24px; }
+
+.mobui-person {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    border: 1px solid var(--mu-glass-border);
+    background: var(--mu-glass);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    cursor: pointer;
+}
+
+.mobui-person:active { background: rgba(255, 255, 255, 0.08); }
+
+.mobui-person__photo {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    margin: -1px 0 -1px -1px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.mobui-person__photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid #fff;
+    mix-blend-mode: overlay;
+}
+
+.mobui-person__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.mobui-person__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+
+.mobui-person__name {
+    font: 500 16px/20px var(--mu-sans);
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobui-person__roles { overflow: hidden; white-space: nowrap; }
+.mobui-person__roles:empty { display: block; min-height: 14px; }
+
+.mobui-person__go { width: 24px; height: 24px; flex-shrink: 0; }
+.mobui-person__go svg { width: 24px; height: 24px; }

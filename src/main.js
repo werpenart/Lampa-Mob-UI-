@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.59';
+    var VERSION = '0.1.60';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового', feed_continue: 'Продолжить' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового', feed_continue: 'Продовжити' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed', feed_movie: 'Out in', feed_series: 'New series in', feed_episode: 'New episode', feed_episodes: 'New episodes', feed_many: 'New notifications', feed_empty: 'Nothing new yet', feed_continue: 'Continue' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового', feed_continue: 'Продолжить', role_actor: 'Актёр', role_actress: 'Актриса', role_director: 'Режиссёр', role_producer: 'Продюсер', role_writer: 'Сценарист' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового', feed_continue: 'Продовжити', role_actor: 'Актор', role_actress: 'Акторка', role_director: 'Режисер', role_producer: 'Продюсер', role_writer: 'Сценарист' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed', feed_movie: 'Out in', feed_series: 'New series in', feed_episode: 'New episode', feed_episodes: 'New episodes', feed_many: 'New notifications', feed_empty: 'Nothing new yet', feed_continue: 'Continue', role_actor: 'Actor', role_actress: 'Actress', role_director: 'Director', role_producer: 'Producer', role_writer: 'Writer' }
     };
 
     function lang() {
@@ -2274,6 +2274,97 @@
         }
     };
 
+    // Ряд актёра на главной: вместо заголовка с именем — плашка из макета
+    // (фото, имя, роли, шеврон). Нажатие открывает страницу актёра
+    var PersonRow = {
+        cache: {},
+
+        init: function () {
+            var self = this;
+            Lampa.Listener.follow('line', function (e) {
+                if (e.type !== 'create' || !e.data || !e.line) return;
+                if (!e.data.icon_img || e.data.icon_svg) return;
+                if (String(e.data.icon_img).indexOf('w90_and_h90_face') < 0) return;
+                self.build(e.line, e.data);
+            });
+        },
+
+        build: function (line, data) {
+            var self = this;
+            var html = line.html || (line.render && line.render());
+            var head = $(html).find('.items-line__head').eq(0);
+            if (!head.length) return;
+
+            var photo = String(data.icon_img).replace('w90_and_h90_face', 'w185');
+            var el = $(
+                '<div class="mobui-person selector">' +
+                    '<div class="mobui-person__photo"><img alt=""></div>' +
+                    '<div class="mobui-person__body">' +
+                        '<div class="mobui-person__name"></div>' +
+                        '<div class="mobui-person__roles mobui-meta"></div>' +
+                    '</div>' +
+                    '<div class="mobui-person__go">' + icon('chevron-right') + '</div>' +
+                '</div>'
+            );
+            el.find('.mobui-person__name').text(data.title || '');
+            el.find('img').attr('src', photo).on('error', function () { this.src = data.icon_img; });
+
+            head.addClass('mobui-person-head').empty().append(el);
+
+            this.info(data.title, function (info) {
+                if (!info) return;
+                el.data('id', info.id);
+                el.find('.mobui-person__roles').html(metaLine(info.roles));
+            });
+
+            onTap(el, function () {
+                var id = el.data('id');
+                if (!id) return;
+                Lampa.Activity.push({ url: '', title: data.title, component: 'actor', id: id, source: 'tmdb' });
+            });
+        },
+
+        // Роли: основная профессия (с учётом пола) и ещё до двух из работ за кадром
+        info: function (name, done) {
+            if (!name) return done(null);
+            if (this.cache[name]) return done(this.cache[name]);
+
+            var self = this;
+            var tmdb = Lampa.Api.sources.tmdb;
+
+            tmdb.get('search/person?query=' + encodeURIComponent(name), {}, function (json) {
+                var p = (json.results || []).filter(function (r) { return r.name === name; })[0] || (json.results || [])[0];
+                if (!p) return done(null);
+
+                var role = function (dep) {
+                    if (dep === 'Acting') return t(p.gender === 1 ? 'role_actress' : 'role_actor');
+                    var map = { Directing: 'role_director', Production: 'role_producer', Writing: 'role_writer' };
+                    return map[dep] ? t(map[dep]) : '';
+                };
+
+                tmdb.get('person/' + p.id + '/combined_credits', {}, function (cr) {
+                    var count = {};
+                    (cr.crew || []).forEach(function (c) { if (c.department) count[c.department] = (count[c.department] || 0) + 1; });
+                    var deps = Object.keys(count).sort(function (a, b) { return count[b] - count[a]; });
+
+                    var roles = [role(p.known_for_department || 'Acting')];
+                    deps.forEach(function (d) {
+                        var r = role(d);
+                        if (r && roles.indexOf(r) < 0 && roles.length < 3) roles.push(r);
+                    });
+
+                    var info = { id: p.id, roles: roles.filter(Boolean) };
+                    self.cache[name] = info;
+                    done(info);
+                }, function () {
+                    var info = { id: p.id, roles: [role(p.known_for_department || 'Acting')].filter(Boolean) };
+                    self.cache[name] = info;
+                    done(info);
+                });
+            }, function () { done(null); });
+        }
+    };
+
     // Окно выбора Lampa: кнопка закрытия как у шторки уведомлений
     var SelectBox = {
         init: function () {
@@ -3287,7 +3378,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [TapGuard, CardPress, SelectBox, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
+        var parts = [TapGuard, CardPress, SelectBox, PersonRow, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.62';
+    var VERSION = '0.1.63';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -226,12 +226,17 @@
                 nz.width = nz.height = 96;
                 var nc = nz.getContext('2d'), nd = nc.createImageData(96, 96);
                 for (var q = 0; q < nd.data.length; q += 4) {
-                    var vq = Math.random() * 255;
+                    var vq = 96 + Math.random() * 64;
                     nd.data[q] = nd.data[q + 1] = nd.data[q + 2] = vq;
-                    nd.data[q + 3] = 10;
+                    nd.data[q + 3] = 6;
                 }
                 nc.putImageData(nd, 0, 0);
-                this.el.find('.mobui-bg__overlay').css('background-image', 'url(' + nz.toDataURL() + ')');
+                // Зерно в один физический пиксель экрана, а не крупными точками
+                var dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+                this.el.find('.mobui-bg__overlay').css({
+                    'background-image': 'url(' + nz.toDataURL() + ')',
+                    'background-size': Math.round(96 / dpr) + 'px'
+                });
             } catch (e) { }
 
             // Фон принадлежит открытой странице: на главной — текущий слайд,

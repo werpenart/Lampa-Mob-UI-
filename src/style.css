@@ -1231,7 +1231,11 @@ body.mobui .main-search {
 body.mobui.search--open .wrap,
 body.mobui.search--open .head { display: none !important; }
 
-body.mobui .main-search > .scroll > .scroll__content { padding: calc(var(--mu-safe-top) + 8px) 0 calc(112px + var(--mu-safe-bottom)) !important; }
+body.mobui .main-search > .scroll > .scroll__content { padding: calc(var(--mu-safe-top) + 8px) 0 0 !important; }
+
+/* Безопасная зона под табами: у поиска высота контейнера фиксированная, и отступ
+   у него снизу не прокручивался — последний ряд оставался под табами */
+body.mobui .main-search > .scroll > .scroll__content > .scroll__body { padding-bottom: calc(112px + var(--mu-safe-bottom)) !important; }
 
 body.mobui .main-search .head-backward {
     padding: 16px 24px 16px !important;

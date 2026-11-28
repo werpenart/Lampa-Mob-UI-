@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.61';
+    var VERSION = '0.1.62';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -220,6 +220,20 @@
             this.el = $('<div class="mobui-bg"><canvas class="mobui-bg__img"></canvas><canvas class="mobui-bg__img"></canvas><div class="mobui-bg__overlay"></div></div>');
             $('body').prepend(this.el);
 
+            // Лёгкое зерно поверх, как «Noise» в генераторе меш-градиентов: убирает полосы
+            try {
+                var nz = document.createElement('canvas');
+                nz.width = nz.height = 96;
+                var nc = nz.getContext('2d'), nd = nc.createImageData(96, 96);
+                for (var q = 0; q < nd.data.length; q += 4) {
+                    var vq = Math.random() * 255;
+                    nd.data[q] = nd.data[q + 1] = nd.data[q + 2] = vq;
+                    nd.data[q + 3] = 10;
+                }
+                nc.putImageData(nd, 0, 0);
+                this.el.find('.mobui-bg__overlay').css('background-image', 'url(' + nz.toDataURL() + ')');
+            } catch (e) { }
+
             // Фон принадлежит открытой странице: на главной — текущий слайд,
             // на странице фильма/сериала — его собственный постер
             Lampa.Listener.follow('activity', function (e) {
@@ -289,31 +303,8 @@
             var W = canvas.width, H = canvas.height;
 
             if (pal) {
-                var rgb = function (col, a) { return 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + a + ')'; };
-                var spot = function (x, y, r, col) {
-                    var g = c.createRadialGradient(x, y, 0, x, y, r);
-                    g.addColorStop(0, rgb(col, 1));
-                    g.addColorStop(0.45, rgb(col, 0.55));
-                    g.addColorStop(1, rgb(col, 0));
-                    c.fillStyle = g;
-                    c.fillRect(0, 0, W, H);
-                };
-
-                c.fillStyle = rgb(pal.base, 1);
-                c.fillRect(0, 0, W, H);
-                // Три точки: слева, сверху по центру (самый яркий цвет), справа
-                spot(0, H * 0.18, W * 0.95, pal.left);
-                spot(W * 1, H * 0.06, W * 0.8, pal.right);
-                spot(W * 0.5, 0, W * 0.9, pal.accent);
-
-                // Ниже первого экрана — ровно цвет основы
-                var fade = c.createLinearGradient(0, H * 0.3, 0, H * 0.62);
-                fade.addColorStop(0, rgb(pal.base, 0));
-                fade.addColorStop(1, rgb(pal.base, 1));
-                c.fillStyle = fade;
-                c.fillRect(0, 0, W, H);
-
-                this.el.css('background-color', rgb(pal.base, 1));
+                this.mesh(c, W, H, pal);
+                this.el.css('background-color', 'rgb(' + pal.base.join(',') + ')');
             }
             else {
                 // Картинку не дали прочитать (нет CORS) — размытая картинка, как раньше
@@ -335,52 +326,142 @@
             $(canvas).addClass('ready');
             this.scrollFollow();
 
-            var base = pal ? pal.base : null;
-            var top = pal ? this.mix(pal.accent, pal.base, 0.5) : null;
-            this.tint(top || base);
+            this.tint(pal ? pal.top : null);
         },
 
         mix: function (a, b, k) {
             return [0, 1, 2].map(function (i) { return Math.round(a[i] * k + b[i] * (1 - k)); });
         },
 
-        // Цвета картинки: средние по левой и правой части верха, самый насыщенный
-        // и общий цвет основы (затемнённый средний)
+        // Палитра как у генераторов меш-градиентов: k-средних по уменьшенной обложке.
+        // Самый большой кластер (то, чего в обложке больше всего) — сверху, два других
+        // заметных цвета — внизу слева (светлее) и справа. Основа ниже первого экрана —
+        // главный цвет, сильно затемнённый
         palette: function (img) {
             try {
+                var cw = 32, ch = 48;
                 var cv = document.createElement('canvas');
-                cv.width = 24; cv.height = 36;
+                cv.width = cw; cv.height = ch;
                 var cx = cv.getContext('2d');
-                cx.drawImage(img, 0, 0, 24, 36);
-                var d = cx.getImageData(0, 0, 24, 36).data;
+                cx.drawImage(img, 0, 0, cw, ch);
+                var d = cx.getImageData(0, 0, cw, ch).data;
 
-                var avg = function (x0, x1, y0, y1) {
-                    var r = 0, g = 0, b = 0, n = 0;
-                    for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
-                        var i = (y * 24 + x) * 4;
-                        r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+                var px = [];
+                for (var i = 0; i < d.length; i += 4) px.push([d[i], d[i + 1], d[i + 2]]);
+
+                var dist = function (a, b) { var r = a[0] - b[0], g = a[1] - b[1], bl = a[2] - b[2]; return r * r * 0.3 + g * g * 0.59 + bl * bl * 0.11 + (r * r + g * g + bl * bl) * 0.3; };
+                var sat = function (c) { var mx = Math.max(c[0], c[1], c[2]), mn = Math.min(c[0], c[1], c[2]); return mx ? (mx - mn) / mx : 0; };
+                var lum = function (c) { return c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; };
+
+                // Центры: самые далёкие друг от друга пиксели (детерминированно)
+                var K = 6, cent = [px[Math.floor(px.length / 2)].slice()];
+                while (cent.length < K) {
+                    var far = null, fd = -1;
+                    for (var p = 0; p < px.length; p += 3) {
+                        var md = Infinity;
+                        for (var k = 0; k < cent.length; k++) md = Math.min(md, dist(px[p], cent[k]));
+                        if (md > fd) { fd = md; far = px[p]; }
                     }
-                    return [r / n, g / n, b / n];
-                };
-
-                var best = null, bestScore = -1;
-                for (var i = 0; i < d.length; i += 4) {
-                    var mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
-                    var sat = mx ? (mx - mn) / mx : 0;
-                    var score = sat * mx * (mx > 40 ? 1 : 0.2);
-                    if (score > bestScore) { bestScore = score; best = [d[i], d[i + 1], d[i + 2]]; }
+                    cent.push(far.slice());
                 }
 
-                var all = avg(0, 24, 0, 36);
-                var round = function (col, k) { return col.map(function (v) { return Math.round(v * k); }); };
+                var count = [];
+                for (var it = 0; it < 8; it++) {
+                    var sum = cent.map(function () { return [0, 0, 0]; });
+                    count = cent.map(function () { return 0; });
+                    px.forEach(function (c) {
+                        var bi = 0, bd = Infinity;
+                        for (var k = 0; k < cent.length; k++) { var dd = dist(c, cent[k]); if (dd < bd) { bd = dd; bi = k; } }
+                        sum[bi][0] += c[0]; sum[bi][1] += c[1]; sum[bi][2] += c[2]; count[bi]++;
+                    });
+                    cent = cent.map(function (c, k) { return count[k] ? sum[k].map(function (v) { return v / count[k]; }) : c; });
+                }
+
+                var cl = cent.map(function (c, k) { return { c: c.map(Math.round), n: count[k] }; })
+                    .filter(function (x) { return x.n > 0; });
+
+                // Почти чёрное и почти белое без цвета — не в приоритете
+                cl.forEach(function (x) {
+                    var l = lum(x.c), sv = sat(x.c);
+                    x.w = x.n * (0.4 + sv) * ((l < 28 || (l > 225 && sv < 0.15)) ? 0.25 : 1);
+                });
+                cl.sort(function (a, b) { return b.w - a.w; });
+
+                var top = cl[0].c;
+                var rest = [];
+                for (var j = 1; j < cl.length && rest.length < 2; j++) {
+                    if (dist(cl[j].c, top) > 1500 && rest.every(function (r) { return dist(r, cl[j].c) > 1500; })) rest.push(cl[j].c);
+                }
+                while (rest.length < 2) rest.push(cl[Math.min(rest.length + 1, cl.length - 1)].c);
+                rest.sort(function (a, b) { return lum(b) - lum(a); });
+
+                // Как в генераторах — чуть сочнее исходника: больше насыщенности и яркости
+                var vivid = function (c) {
+                    var r = c[0] / 255, g = c[1] / 255, b = c[2] / 255;
+                    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), v = mx, sv = mx ? (mx - mn) / mx : 0;
+                    var h = 0, dd = mx - mn;
+                    if (dd) h = mx === r ? ((g - b) / dd) % 6 : mx === g ? (b - r) / dd + 2 : (r - g) / dd + 4;
+                    h = (h * 60 + 360) % 360;
+                    sv = Math.min(1, sv * 1.35 + 0.05);
+                    v = Math.min(1, Math.max(v * 1.15, 0.42));
+                    var C = v * sv, X = C * (1 - Math.abs((h / 60) % 2 - 1)), m = v - C, q;
+                    q = h < 60 ? [C, X, 0] : h < 120 ? [X, C, 0] : h < 180 ? [0, C, X] : h < 240 ? [0, X, C] : h < 300 ? [X, 0, C] : [C, 0, X];
+                    return q.map(function (t) { return Math.round((t + m) * 255); });
+                };
 
                 return {
-                    left: round(avg(0, 10, 0, 18), 1),
-                    right: round(avg(14, 24, 0, 18), 0.55),
-                    accent: round(best || all, 1),
-                    base: round(this.mix(all, best || all, 0.7), 0.42)
+                    top: vivid(top),
+                    left: vivid(rest[0]),
+                    right: vivid(rest[1]),
+                    base: top.map(function (v) { return Math.round(v * 0.32); })
                 };
             } catch (e) { return null; }
+        },
+
+        // Мягкий меш: цвет в каждой точке — смесь трёх цветов с весами по расстоянию
+        // (как «Soft Bézier»). Считаем на маленькой сетке и растягиваем со сглаживанием
+        mesh: function (c, W, H, pal) {
+            var gw = 24, gh = Math.max(24, Math.round(24 * H / W));
+            var grid = document.createElement('canvas');
+            grid.width = gw; grid.height = gh;
+            var gx = grid.getContext('2d');
+            var img = gx.createImageData(gw, gh);
+            var asp = H / W;
+
+            // Два ярких цвета — в верхних углах, главный цвет обложки — ниже, и он же
+            // плавно темнеет в основу: шва между первым экраном и заливкой нет
+            var pts = [
+                { x: -0.1, y: 0.02 * asp, c: pal.left, k: 1 },
+                { x: 1.1, y: -0.02 * asp, c: pal.right, k: 1 },
+                { x: 0.5, y: 0.85 * asp, c: pal.top, k: 1.8 }
+            ];
+
+            for (var y = 0; y < gh; y++) {
+                for (var x = 0; x < gw; x++) {
+                    var u = x / (gw - 1), v = y / (gh - 1) * asp;
+                    var r = 0, g = 0, b = 0, ws = 0;
+                    for (var i = 0; i < 3; i++) {
+                        var dx = u - pts[i].x, dy = v - pts[i].y;
+                        var w = pts[i].k / Math.pow(dx * dx + dy * dy + 0.02, 1.25);
+                        r += pts[i].c[0] * w; g += pts[i].c[1] * w; b += pts[i].c[2] * w; ws += w;
+                    }
+                    var o = (y * gw + x) * 4;
+                    img.data[o] = r / ws; img.data[o + 1] = g / ws; img.data[o + 2] = b / ws; img.data[o + 3] = 255;
+                }
+            }
+            gx.putImageData(img, 0, 0);
+
+            c.imageSmoothingEnabled = true;
+            try { c.imageSmoothingQuality = 'high'; } catch (e) { }
+            c.drawImage(grid, 0, 0, W, H);
+
+            // Низ первого экрана плавно уходит в основу, ниже — ровная заливка
+            var base = 'rgba(' + pal.base.join(',') + ',';
+            var fade = c.createLinearGradient(0, H * 0.45, 0, H);
+            fade.addColorStop(0, base + '0)');
+            fade.addColorStop(1, base + '1)');
+            c.fillStyle = fade;
+            c.fillRect(0, 0, W, H);
         },
 
         // Меш занимает первый экран и уезжает вместе со страницей

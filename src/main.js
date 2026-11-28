@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.65';
+    var VERSION = '0.1.66';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -4030,7 +4030,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [TapGuard, CardPress, SelectBox, PersonRow, Online, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
+        var parts = [TapGuard, CardPress, SelectBox, PersonRow, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }

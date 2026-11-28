@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.60';
+    var VERSION = '0.1.61';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -216,7 +216,8 @@
         image: null,
         init: function () {
             var self = this;
-            this.el = $('<div class="mobui-bg"><canvas class="mobui-bg__img"></canvas><div class="mobui-bg__overlay"></div></div>');
+            // Два слоя: новый меш рисуется в скрытом и плавно проявляется поверх старого
+            this.el = $('<div class="mobui-bg"><canvas class="mobui-bg__img"></canvas><canvas class="mobui-bg__img"></canvas><div class="mobui-bg__overlay"></div></div>');
             $('body').prepend(this.el);
 
             // Фон принадлежит открытой странице: на главной — текущий слайд,
@@ -268,59 +269,154 @@
             };
             load(true);
         },
+        // Фон как в макете: первый экран — меш-градиент из трёх цветов картинки,
+        // ниже — один цвет по картинке. Поверх — тёмный слой 64%.
+        // Меш едет вверх вместе с прокруткой страницы
         draw: function () {
             var img = this.image;
             if (!img || !this.el) return;
 
-            var canvas = this.el.find('.mobui-bg__img')[0];
-            var box = canvas.getBoundingClientRect();
-            var bw = box.width || window.innerWidth;
-            var bh = box.height || window.innerHeight;
+            var layers = this.el.find('.mobui-bg__img');
+            var canvas = layers.filter(':not(.ready)')[0] || layers[0];
+            var old = layers.not(canvas);
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            var pal = this.palette(img);
 
-            // Как background-size: cover и позиция center top
-            var iw = img.naturalWidth, ih = img.naturalHeight;
-            if (!iw || !ih) return;
-            var scale = Math.max(bw / iw, bh / ih);
-            var sw = bw / scale, sh = bh / scale;
-            var sx = (iw - sw) / 2, sy = 0;
+            canvas.width = Math.round(w / 2);
+            canvas.height = Math.round(h / 2);
+            var c = canvas.getContext('2d');
+            var W = canvas.width, H = canvas.height;
 
-            // Уменьшение до ~1/32 ширины ≈ blur(32px), затем плавное увеличение
-            var small = document.createElement('canvas');
-            small.width = Math.max(4, Math.round(bw / 32));
-            small.height = Math.max(4, Math.round(bh / 32));
+            if (pal) {
+                var rgb = function (col, a) { return 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + a + ')'; };
+                var spot = function (x, y, r, col) {
+                    var g = c.createRadialGradient(x, y, 0, x, y, r);
+                    g.addColorStop(0, rgb(col, 1));
+                    g.addColorStop(0.45, rgb(col, 0.55));
+                    g.addColorStop(1, rgb(col, 0));
+                    c.fillStyle = g;
+                    c.fillRect(0, 0, W, H);
+                };
 
+                c.fillStyle = rgb(pal.base, 1);
+                c.fillRect(0, 0, W, H);
+                // Три точки: слева, сверху по центру (самый яркий цвет), справа
+                spot(0, H * 0.18, W * 0.95, pal.left);
+                spot(W * 1, H * 0.06, W * 0.8, pal.right);
+                spot(W * 0.5, 0, W * 0.9, pal.accent);
+
+                // Ниже первого экрана — ровно цвет основы
+                var fade = c.createLinearGradient(0, H * 0.3, 0, H * 0.62);
+                fade.addColorStop(0, rgb(pal.base, 0));
+                fade.addColorStop(1, rgb(pal.base, 1));
+                c.fillStyle = fade;
+                c.fillRect(0, 0, W, H);
+
+                this.el.css('background-color', rgb(pal.base, 1));
+            }
+            else {
+                // Картинку не дали прочитать (нет CORS) — размытая картинка, как раньше
+                var iw = img.naturalWidth, ih = img.naturalHeight;
+                if (!iw || !ih) return;
+                var small = document.createElement('canvas');
+                small.width = Math.max(4, Math.round(w / 32));
+                small.height = Math.max(4, Math.round(h / 32));
+                var scale = Math.max(w / iw, h / ih);
+                var sw = w / scale, sh = h / scale;
+                try {
+                    small.getContext('2d').drawImage(img, (iw - sw) / 2, 0, sw, sh, 0, 0, small.width, small.height);
+                    c.imageSmoothingEnabled = true;
+                    c.drawImage(small, 0, 0, W, H);
+                } catch (e) { }
+            }
+
+            old.removeClass('ready');
+            $(canvas).addClass('ready');
+            this.scrollFollow();
+
+            var base = pal ? pal.base : null;
+            var top = pal ? this.mix(pal.accent, pal.base, 0.5) : null;
+            this.tint(top || base);
+        },
+
+        mix: function (a, b, k) {
+            return [0, 1, 2].map(function (i) { return Math.round(a[i] * k + b[i] * (1 - k)); });
+        },
+
+        // Цвета картинки: средние по левой и правой части верха, самый насыщенный
+        // и общий цвет основы (затемнённый средний)
+        palette: function (img) {
             try {
-                var sc = small.getContext('2d');
-                sc.imageSmoothingEnabled = true;
-                sc.drawImage(img, sx, sy, sw, sh, 0, 0, small.width, small.height);
+                var cv = document.createElement('canvas');
+                cv.width = 24; cv.height = 36;
+                var cx = cv.getContext('2d');
+                cx.drawImage(img, 0, 0, 24, 36);
+                var d = cx.getImageData(0, 0, 24, 36).data;
 
-                canvas.width = small.width * 8;
-                canvas.height = small.height * 8;
-                var c = canvas.getContext('2d');
-                c.imageSmoothingEnabled = true;
-                try { c.imageSmoothingQuality = 'high'; } catch (e) { }
-                c.drawImage(small, 0, 0, canvas.width, canvas.height);
+                var avg = function (x0, x1, y0, y1) {
+                    var r = 0, g = 0, b = 0, n = 0;
+                    for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) {
+                        var i = (y * 24 + x) * 4;
+                        r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+                    }
+                    return [r / n, g / n, b / n];
+                };
 
-                $(canvas).addClass('ready');
-            } catch (e) { }
+                var best = null, bestScore = -1;
+                for (var i = 0; i < d.length; i += 4) {
+                    var mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
+                    var sat = mx ? (mx - mn) / mx : 0;
+                    var score = sat * mx * (mx > 40 ? 1 : 0.2);
+                    if (score > bestScore) { bestScore = score; best = [d[i], d[i + 1], d[i + 2]]; }
+                }
 
-            this.tint(small);
+                var all = avg(0, 24, 0, 36);
+                var round = function (col, k) { return col.map(function (v) { return Math.round(v * k); }); };
+
+                return {
+                    left: round(avg(0, 10, 0, 18), 1),
+                    right: round(avg(14, 24, 0, 18), 0.55),
+                    accent: round(best || all, 1),
+                    base: round(this.mix(all, best || all, 0.7), 0.42)
+                };
+            } catch (e) { return null; }
+        },
+
+        // Меш занимает первый экран и уезжает вместе со страницей
+        scrollFollow: function () {
+            var self = this;
+            if (this.following) return;
+            this.following = true;
+
+            var canvas = this.el.find('.mobui-bg__img');
+            var raf = 0;
+            var update = function () {
+                raf = 0;
+                var act = Lampa.Activity.active();
+                var top = 0;
+                try {
+                    var box = act && act.activity && $(act.activity.render()).find('.scroll--over, .scroll').first()[0];
+                    if (box) top = box.scrollTop || 0;
+                    if (!top && box) {
+                        var content = box.querySelector('.scroll__content, .scroll__body');
+                        var m = content && /translate3?d?\(\s*[-\d.]+px\s*,\s*(-?[\d.]+)px/.exec(content.style.transform || '');
+                        if (m) top = -parseFloat(m[1]);
+                    }
+                } catch (e) { }
+                canvas.css('transform', 'translate3d(0,' + (-Math.max(0, top)) + 'px,0)');
+            };
+
+            document.addEventListener('scroll', function () { if (!raf) raf = requestAnimationFrame(update); }, { capture: true, passive: true });
+            Lampa.Listener.follow('activity', function (e) { if (e.type === 'start') setTimeout(update, 50); });
+            setInterval(function () { if (!raf) raf = requestAnimationFrame(update); }, 500);
         },
 
         // iOS рисует под статус-баром градиент цветом фона страницы (html/body), поверх
-        // шапки. Убрать его нельзя, но можно сделать его того же цвета, что и фон под ним:
-        // берём средний цвет верхней полосы размытой картинки с учётом затемнения 64%
-        tint: function (small) {
+        // шапки. Красим фон страницы в цвет верха фона (с учётом затемнения 64%)
+        tint: function (col) {
             var color = StatusBar.color;
-            try {
-                var rows = Math.max(1, Math.round(small.height * 0.12));
-                var data = small.getContext('2d').getImageData(0, 0, small.width, rows).data;
-                var r = 0, g = 0, b = 0, n = 0;
-                for (var i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
-                var k = 0.36 / n;
-                color = 'rgb(' + Math.round(r * k) + ',' + Math.round(g * k) + ',' + Math.round(b * k) + ')';
-            } catch (e) { }
-
+            if (col) color = 'rgb(' + Math.round(col[0] * 0.36) + ',' + Math.round(col[1] * 0.36) + ',' + Math.round(col[2] * 0.36) + ')';
             this.color = color;
             this.paint();
         },

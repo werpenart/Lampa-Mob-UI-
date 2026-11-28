@@ -8,7 +8,7 @@
     if (window.mobui_plugin_loaded) return;
     window.mobui_plugin_loaded = true;
 
-    var VERSION = '0.1.64';
+    var VERSION = '0.1.65';
     var ICONS = /*@ICONS@*/{};
     var CSS = /*@CSS@*/'';
 
@@ -17,9 +17,9 @@
     /* ------------------------------------------------------------------ */
 
     var I18N = {
-        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового', feed_continue: 'Продолжить', role_actor: 'Актёр', role_actress: 'Актриса', role_director: 'Режиссёр', role_producer: 'Продюсер', role_writer: 'Сценарист' },
-        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового', feed_continue: 'Продовжити', role_actor: 'Актор', role_actress: 'Акторка', role_director: 'Режисер', role_producer: 'Продюсер', role_writer: 'Сценарист' },
-        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed', feed_movie: 'Out in', feed_series: 'New series in', feed_episode: 'New episode', feed_episodes: 'New episodes', feed_many: 'New notifications', feed_empty: 'Nothing new yet', feed_continue: 'Continue', role_actor: 'Actor', role_actress: 'Actress', role_director: 'Director', role_producer: 'Producer', role_writer: 'Writer' }
+        ru: { movie: 'Фильм', series: 'Сериал', watch: 'Смотреть', more: 'Ещё', edit_menu: 'Редактировать меню', reset: 'Сбросить', done: 'Готово', notifications: 'Уведомления', search_placeholder: 'Фильмы, сериалы, люди', profile: 'Профиль', profile_name: 'Имя в меню', profile_name_descr: 'Отображается в шапке бокового меню', translucent: 'Прозрачный статус-бар (эксперимент)', translucent_descr: 'В приложении с экрана «Домой» работает нестабильно. Применяется после перезапуска', diag: 'Диагностика экрана', diag_descr: 'Показывает размеры окна. Тап по блоку — обновить', fill: 'Тест: сплошной фон', fill_descr: 'Заливает фон ярким цветом. Если затемнение сверху остаётся — его рисует iOS', clear: 'Тест: прозрачный фон страницы', clear_descr: 'Убирает цвет фона страницы, из которого iOS рисует затемнение сверху', quality: 'Качество на постерах', quality_descr: 'Alloha, затем торренты (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для качества на постерах. Без токена — JacRed', feed_movie: 'Вышел в качестве', feed_series: 'Новый сериал в качестве', feed_episode: 'Новая серия', feed_episodes: 'Новые серии', feed_many: 'Новых уведомлений', feed_empty: 'Пока ничего нового', feed_continue: 'Продолжить', role_actor: 'Актёр', role_actress: 'Актриса', role_director: 'Режиссёр', role_producer: 'Продюсер', role_writer: 'Сценарист', less: 'Свернуть', o_reversed: 'Обратно', o_grid: 'Сетка', o_list: 'Список', o_voice: 'Озвучка', o_source: 'Источник', o_min: ' мин', o_episodes: 'Серий: {n}', o_watched: 'Просмотрено {a} из {b} • осталось {c}', o_trailer: 'Трейлер в онлайне', o_trailer_descr: 'Вместо кадра с логотипом наверху страницы онлайна — трейлер с YouTube' },
+        uk: { movie: 'Фільм', series: 'Серіал', watch: 'Дивитися', more: 'Ще', edit_menu: 'Редагувати меню', reset: 'Скинути', done: 'Готово', notifications: 'Сповіщення', search_placeholder: 'Фільми, серіали, люди', profile: 'Профіль', profile_name: "Ім'я в меню", profile_name_descr: 'Відображається у шапці бічного меню', translucent: 'Прозорий статус-бар (експеримент)', translucent_descr: 'У застосунку з екрана «Додому» працює нестабільно. Діє після перезапуску', diag: 'Діагностика екрана', diag_descr: 'Показує розміри вікна. Тап по блоку — оновити', fill: 'Тест: суцільний фон', fill_descr: 'Заливає фон яскравим кольором. Якщо затемнення зверху лишається — його малює iOS', clear: 'Тест: прозорий фон сторінки', clear_descr: 'Прибирає колір фону сторінки, з якого iOS малює затемнення зверху', quality: 'Якість на постерах', quality_descr: 'Alloha, потім торренти (JacRed)', alloha: 'Токен Alloha', alloha_descr: 'Для якості на постерах. Без токена — JacRed', feed_movie: 'Вийшов у якості', feed_series: 'Новий серіал у якості', feed_episode: 'Нова серія', feed_episodes: 'Нові серії', feed_many: 'Нових сповіщень', feed_empty: 'Поки нічого нового', feed_continue: 'Продовжити', role_actor: 'Актор', role_actress: 'Акторка', role_director: 'Режисер', role_producer: 'Продюсер', role_writer: 'Сценарист', less: 'Згорнути', o_reversed: 'Навпаки', o_grid: 'Сітка', o_list: 'Список', o_voice: 'Озвучення', o_source: 'Джерело', o_min: ' хв', o_episodes: 'Серій: {n}', o_watched: 'Переглянуто {a} з {b} • лишилось {c}', o_trailer: 'Трейлер в онлайні', o_trailer_descr: 'Замість кадру з логотипом угорі сторінки онлайну — трейлер з YouTube' },
+        en: { movie: 'Movie', series: 'Series', watch: 'Watch', more: 'More', edit_menu: 'Edit Menu', reset: 'Reset', done: 'Done', notifications: 'Notifications', search_placeholder: 'Movies, series, people', profile: 'Profile', profile_name: 'Menu name', profile_name_descr: 'Shown at the top of the side menu', translucent: 'Transparent status bar (experimental)', translucent_descr: 'Unstable in the Home Screen app. Applies after restart', diag: 'Screen diagnostics', diag_descr: 'Shows window sizes. Tap the box to refresh', fill: 'Test: solid background', fill_descr: 'Fills the background with a bright color. If the top shade stays, iOS draws it', clear: 'Test: transparent page background', clear_descr: 'Removes the page background color iOS uses for the top shade', quality: 'Quality on posters', quality_descr: 'Alloha, then torrents (JacRed)', alloha: 'Alloha token', alloha_descr: 'For poster quality. Without it — JacRed', feed_movie: 'Out in', feed_series: 'New series in', feed_episode: 'New episode', feed_episodes: 'New episodes', feed_many: 'New notifications', feed_empty: 'Nothing new yet', feed_continue: 'Continue', role_actor: 'Actor', role_actress: 'Actress', role_director: 'Director', role_producer: 'Producer', role_writer: 'Writer', less: 'Less', o_reversed: 'Reversed', o_grid: 'Grid', o_list: 'List', o_voice: 'Voice-over', o_source: 'Source', o_min: 'm', o_episodes: '{n} episodes', o_watched: 'Watched {a} of {b} • {c} left', o_trailer: 'Trailer on online page', o_trailer_descr: 'Shows a YouTube trailer instead of the backdrop with logo at the top of the online page' }
     };
 
     function lang() {
@@ -2338,6 +2338,12 @@
 
             Lampa.SettingsApi.addParam({
                 component: 'mobui',
+                param: { name: 'mobui_online_trailer', type: 'trigger', default: false },
+                field: { name: t('o_trailer'), description: t('o_trailer_descr') }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'mobui',
                 param: { name: 'mobui_testclear', type: 'trigger', default: false },
                 field: { name: t('clear'), description: t('clear_descr') },
                 onChange: function (v) { TestFill.clear(v === true || v === 'true'); }
@@ -2547,6 +2553,461 @@
         }
     };
 
+    /* ------------------------------------------------------------------ */
+    /* Онлайн (страница Lampac): структура из макетов, стили — наши        */
+    /* ------------------------------------------------------------------ */
+
+    // Страница онлайна остаётся родной страницей Lampac: источники, озвучки, сезоны,
+    // запуск серий — всё его. Мы только перестраиваем вид: сверху обложка (кадр +
+    // логотип или трейлер), название, рейтинги, описание, ряд выбора источника,
+    // сортировки и вида, выбор сезона и озвучки, а серии — сеткой или списком.
+    var Online = {
+        init: function () {
+            var self = this;
+
+            // Фильтр Lampac нужен, чтобы открывать его меню из своих кнопок
+            try {
+                var Orig = Lampa.Filter;
+                if (Orig && !Orig.mobui) {
+                    var Wrapped = function (object) {
+                        var f = new Orig(object);
+                        if (object) object.mobuiFilter = f;
+                        return f;
+                    };
+                    Wrapped.prototype = Orig.prototype;
+                    Wrapped.mobui = true;
+                    Lampa.Filter = Wrapped;
+                }
+            } catch (e) { }
+
+            Lampa.Listener.follow('activity', function (e) {
+                if (e.type !== 'start') return;
+                var on = e.component === 'lampac' && e.object;
+                document.body.classList.toggle('mobui-online', !!on);
+                if (on) self.attach(e.object);
+            });
+        },
+
+        attach: function (object) {
+            var self = this;
+            var root = $(object.activity && object.activity.render ? object.activity.render() : []);
+            if (!root.length) return;
+            if (object.mobuiOnline) return this.sync(object);
+
+            var st = object.mobuiOnline = {
+                root: root,
+                movie: object.movie || {},
+                view: Lampa.Storage.get('mobui_online_view', 'grid'),
+                reversed: false,
+                desc: {},
+                details: null
+            };
+
+            st.head = this.header(object);
+
+            var timer;
+            st.watch = new MutationObserver(function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () { self.sync(object); }, 60);
+            });
+            st.watch.observe(root[0], { childList: true, subtree: true });
+
+            this.details(object);
+            this.sync(object);
+        },
+
+        // ---------- данные ----------
+
+        details: function (object) {
+            var self = this;
+            var st = object.mobuiOnline;
+            var m = st.movie;
+            if (!m.id) return;
+            var tv = isSeries(m);
+            var method = (tv ? 'tv/' : 'movie/') + m.id + '?append_to_response=' + (tv ? 'content_ratings' : 'release_dates') + ',external_ids';
+
+            try {
+                Lampa.Api.sources.tmdb.get(method, {}, function (json) {
+                    st.details = json || {};
+                    self.fillInfo(object);
+                }, function () { });
+            } catch (e) { }
+
+            Art.get(m, function (art) {
+                st.art = art;
+                self.fillCover(object);
+            });
+
+            if (Lampa.Storage.get('mobui_online_trailer', false) === true || Lampa.Storage.get('mobui_online_trailer', 'false') === 'true') this.trailer(object);
+        },
+
+        trailer: function (object) {
+            var self = this;
+            var st = object.mobuiOnline;
+            var m = st.movie;
+            var base = (isSeries(m) ? 'tv/' : 'movie/') + m.id + '/videos';
+            var pick = function (list) {
+                list = (list || []).filter(function (v) { return v.site === 'YouTube' && /trailer|teaser/i.test(v.type || ''); });
+                list.sort(function (a, b) { return (b.type === 'Trailer') - (a.type === 'Trailer'); });
+                return list[0];
+            };
+            try {
+                Lampa.Api.sources.tmdb.get(base, {}, function (json) {
+                    var v = pick(json.results);
+                    if (v) { st.trailer = v.key; self.fillCover(object); return; }
+                    Lampa.Api.sources.tmdb.get(base + '?language=en-US', {}, function (j2) {
+                        var v2 = pick(j2.results);
+                        if (v2) { st.trailer = v2.key; self.fillCover(object); }
+                    }, function () { });
+                }, function () { });
+            } catch (e) { }
+        },
+
+        // ---------- шапка ----------
+
+        header: function (object) {
+            var st = object.mobuiOnline;
+            var m = st.movie;
+            var tv = isSeries(m);
+
+            var head = $(
+                '<div class="mobui-online">' +
+                    '<div class="mobui-online__cover">' +
+                        '<div class="mobui-online__poster">' +
+                            '<img class="mobui-online__img" alt="">' +
+                            '<img class="mobui-online__logo" alt="">' +
+                            '<div class="mobui-online__badges"></div>' +
+                            '<div class="mobui-online__bottom">' +
+                                '<div class="mobui-btn mobui-btn--white mobui-online__watch">' + icon('play') + '<span></span></div>' +
+                                '<div class="mobui-online__progress"></div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="mobui-online__title"></div>' +
+                    '<div class="mobui-online__meta mobui-meta"></div>' +
+                    '<div class="mobui-online__rates"></div>' +
+                    '<div class="mobui-online__descr"></div>' +
+                    '<div class="mobui-online__more selector">' + esc(t('more')) + '</div>' +
+                    '<div class="mobui-online__row">' +
+                        '<div class="mobui-online__ctl mobui-online__source selector"><span class="mobui-online__q"></span><span class="mobui-online__name"></span>' + icon('s-chevron') + '</div>' +
+                        '<div class="mobui-online__ctl mobui-online__sort selector">' + icon('o-sort') + '<span>' + esc(t('o_reversed')) + '</span></div>' +
+                        '<div class="mobui-online__ctl mobui-online__view selector"><i></i><span></span></div>' +
+                    '</div>' +
+                    '<div class="mobui-online__row mobui-online__row--pick">' +
+                        '<div class="mobui-online__pick mobui-online__season selector"><div><small></small><b></b></div>' + icon('s-chevron') + '</div>' +
+                        '<div class="mobui-online__pick mobui-online__voice selector"><div><small>' + esc(t('o_voice')) + '</small><b></b></div>' + icon('s-chevron') + '</div>' +
+                    '</div>' +
+                '</div>'
+            );
+
+            // Explorer Lampa дописывает в карточку заглушки («Фильм не найден»), поэтому
+            // у сериала берём name, а настоящее название уточняем из TMDB
+            head.find('.mobui-online__title').text(tv ? (m.name || m.original_name || '') : (m.title || m.original_title || ''));
+            head.find('.mobui-online__descr').text(m.overview || '');
+            head.toggleClass('mobui-online--tv', tv);
+
+            var self = this;
+            onTap(head.find('.mobui-online__more'), function () {
+                head.toggleClass('mobui-online--open');
+                head.find('.mobui-online__more').text(t(head.hasClass('mobui-online--open') ? 'less' : 'more'));
+            });
+            onTap(head.find('.mobui-online__source'), function () { self.sources(object); });
+            onTap(head.find('.mobui-online__season'), function () { self.pick(object, 'season'); });
+            onTap(head.find('.mobui-online__voice'), function () { self.pick(object, 'voice'); });
+            onTap(head.find('.mobui-online__sort'), function () {
+                st.reversed = !st.reversed;
+                self.sync(object);
+            });
+            onTap(head.find('.mobui-online__view'), function () {
+                st.view = st.view === 'grid' ? 'list' : 'grid';
+                Lampa.Storage.set('mobui_online_view', st.view);
+                self.sync(object);
+            });
+            onTap(head.find('.mobui-online__watch'), function () {
+                if (st.next) st.next.trigger('hover:enter');
+            });
+
+            return head;
+        },
+
+        fillCover: function (object) {
+            var st = object.mobuiOnline;
+            var head = st.head;
+            var art = st.art || {};
+            var m = st.movie;
+
+            if (st.trailer) {
+                if (!head.hasClass('mobui-online--trailer')) {
+                    head.addClass('mobui-online--trailer');
+                    var box = $('<div class="mobui-online__trailer"><img alt=""><div class="mobui-online__play">' + icon('play') + '</div></div>');
+                    box.find('img').attr('src', 'https://img.youtube.com/vi/' + st.trailer + '/hqdefault.jpg');
+                    head.find('.mobui-online__cover').prepend(box);
+                    onTap(box, function () {
+                        if (box.find('iframe').length) return;
+                        box.append('<iframe src="https://www.youtube.com/embed/' + st.trailer + '?autoplay=1&playsinline=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>');
+                        box.addClass('playing');
+                    });
+                    var book = $('<div class="mobui-online__book selector">' + icon('bookmark-16') + '</div>');
+                    head.find('.mobui-online__cover').append($('<div class="mobui-online__actions"></div>').append(head.find('.mobui-online__watch')).append(book));
+                    var fav = function () { try { return Lampa.Favorite.check(m).book; } catch (e) { return false; } };
+                    book.toggleClass('on', !!fav());
+                    onTap(book, function () {
+                        try { Lampa.Favorite.toggle('book', m); } catch (e) { }
+                        book.toggleClass('on', !!fav());
+                    });
+                }
+                return;
+            }
+
+            var img = head.find('.mobui-online__img');
+            var logo = head.find('.mobui-online__logo');
+            var list = art.backdrops && art.backdrops.length ? art.backdrops : (m.backdrop_path ? [m.backdrop_path] : []);
+            if (list.length && !img.attr('src')) {
+                img.on('load', function () { img.addClass('loaded'); });
+                img.attr('src', tmdbImg(list[0], 'w780'));
+            }
+            if (art.logo && !logo.attr('src')) {
+                logo[0].crossOrigin = 'anonymous';
+                logo.on('load', function () {
+                    try { if (Art.isDark(logo[0])) logo.addClass('mobui-wide-logo--light'); } catch (e) { }
+                    logo.addClass('loaded');
+                });
+                logo.on('error', function () {
+                    if (logo[0].crossOrigin) { var s = logo.attr('src'); logo[0].removeAttribute('crossorigin'); logo.attr('src', s); }
+                });
+                logo.attr('src', tmdbImg(art.logo, 'w500'));
+            }
+        },
+
+        fillInfo: function (object) {
+            var st = object.mobuiOnline;
+            var d = st.details || {};
+            var m = st.movie;
+            var tv = isSeries(m);
+            var head = st.head;
+
+            // Тип • годы • возраст • длительность
+            var year = String(d.first_air_date || d.release_date || m.first_air_date || m.release_date || '').slice(0, 4);
+            if (tv && year && d.status && !/ended|canceled/i.test(d.status)) year += '-';
+            else if (tv && year && d.last_air_date && d.last_air_date.slice(0, 4) !== year.slice(0, 4)) year += '–' + d.last_air_date.slice(0, 4);
+
+            var pg = '';
+            try { pg = Lampa.Api.sources.tmdb.parsePG(d) || ''; } catch (e) { }
+            var run = tv ? ((d.episode_run_time || [])[0] || (d.last_episode_to_air || {}).runtime) : d.runtime;
+
+            head.find('.mobui-online__meta').html(metaLine([t(tv ? 'series' : 'movie'), year, pg, run ? run + t('o_min') : '']));
+            if (d.name || d.title) head.find('.mobui-online__title').text(d.name || d.title);
+            if (d.overview) head.find('.mobui-online__descr').text(d.overview);
+            head.find('.mobui-online__more').toggle(head.find('.mobui-online__descr').text().length > 120);
+
+            // Рейтинги, какие есть
+            var rates = [];
+            var vote = d.vote_average || m.vote_average;
+            if (vote) rates.push([parseFloat(vote).toFixed(1), 'TMDB']);
+            var imdb = parseFloat(m.imdb_rating || d.imdb_rating || 0);
+            if (imdb) rates.push([imdb.toFixed(1), 'IMDb']);
+            var kp = parseFloat(m.kp_rating || d.kp_rating || 0);
+            if (kp) rates.push([kp.toFixed(1), 'KinoPoisk']);
+            head.find('.mobui-online__rates').html(rates.map(function (r) {
+                return '<div class="mobui-online__rate"><b>' + esc(r[0]) + '</b><small>' + esc(r[1]) + '</small></div>';
+            }).join('')).toggle(rates.length > 0);
+        },
+
+        // ---------- выбор источника, сезона, озвучки ----------
+
+        sources: function (object) {
+            var f = object.mobuiFilter;
+            if (!f) return;
+            var items = (f.get('sort') || []).map(function (s) {
+                return $.extend({}, s, { mobuiDot: !s.ghost });
+            });
+            var cur = items.filter(function (s) { return s.selected; })[0];
+
+            SelectBox.grid = true;
+            Lampa.Select.show({
+                title: t('o_source') + (cur ? ': ' + cur.title : ''),
+                items: items,
+                onBack: function () { SelectBox.grid = false; Lampa.Controller.toggle('content'); },
+                onSelect: function (a) {
+                    SelectBox.grid = false;
+                    var orig = (f.get('sort') || []).filter(function (s) { return s.source === a.source; })[0] || a;
+                    f.onSelect('sort', orig);
+                }
+            });
+        },
+
+        pick: function (object, type) {
+            var f = object.mobuiFilter;
+            if (!f) return;
+            var a = (f.get('filter') || []).filter(function (x) { return x.stype === type; })[0];
+            if (!a || !a.items) return;
+
+            Lampa.Select.show({
+                title: a.title,
+                items: a.items,
+                onBack: function () { Lampa.Controller.toggle('content'); },
+                onSelect: function (b) {
+                    a.items.forEach(function (x) { x.selected = false; });
+                    b.selected = true;
+                    a.subtitle = b.title;
+                    f.onSelect('filter', a, b);
+                }
+            });
+        },
+
+        // ---------- синхронизация с тем, что нарисовал Lampac ----------
+
+        sync: function (object) {
+            var st = object.mobuiOnline;
+            if (!st) return;
+            var root = st.root;
+            var head = st.head;
+            var body = root.find('.explorer__files-body .scroll__body').first();
+            if (!body.length) return;
+
+            if (head[0].parentNode !== body[0] || body[0].firstChild !== head[0]) body.prepend(head);
+            body.toggleClass('mobui-ep--list', st.view === 'list').toggleClass('mobui-ep--grid', st.view !== 'list');
+
+            var m = st.movie;
+            var tv = isSeries(m);
+            var f = object.mobuiFilter;
+
+            // Источник, сезон, озвучка
+            var src = f ? (f.get('sort') || []).filter(function (s) { return s.selected; })[0] : null;
+            var filt = f ? (f.get('filter') || []) : [];
+            var season = filt.filter(function (x) { return x.stype === 'season'; })[0];
+            var voice = filt.filter(function (x) { return x.stype === 'voice'; })[0];
+
+            head.find('.mobui-online__name').text(src ? src.title : t('o_source'));
+            head.find('.mobui-online__season').toggle(!!season);
+            head.find('.mobui-online__voice').toggle(!!voice);
+            head.find('.mobui-online__row--pick').toggle(!!(season || voice));
+            if (voice) head.find('.mobui-online__voice b').text(voice.subtitle || '');
+            if (season) head.find('.mobui-online__season b').text(season.subtitle || '');
+
+            head.find('.mobui-online__view i').html(icon(st.view === 'list' ? 'o-grid' : 'o-list'));
+            head.find('.mobui-online__view span').text(t(st.view === 'list' ? 'o_grid' : 'o_list'));
+            head.find('.mobui-online__sort').toggleClass('on', st.reversed);
+
+            // Серии
+            var items = body.find('.online-prestige--full');
+            var seasonNum = season ? parseInt(String(season.subtitle || '').replace(/\D+/g, ''), 10) || 1 : 0;
+            var self = this;
+            var watched = 0;
+            var next = null, lastSeen = -1;
+
+            items.each(function (i) {
+                var el = $(this);
+                self.episode(object, el, tv ? seasonNum : 0);
+                el.css('order', st.reversed ? String(items.length - i) : '');
+                var done = el.find('.online-prestige__viewed').length > 0;
+                var started = !!el.find('.online-prestige__timeline [style*="width"]').filter(function () { return parseFloat(this.style.width) > 0; }).length;
+                el.find('.online-prestige__timeline').toggleClass('mobui-started', started && !done);
+                if (done) watched++;
+                if (done || started) lastSeen = i;
+            });
+
+            if (items.length) {
+                var target = lastSeen < 0 ? 0 : lastSeen;
+                var t0 = items.eq(target);
+                if (t0.find('.online-prestige__viewed').length && target + 1 < items.length) t0 = items.eq(target + 1);
+                next = t0;
+            }
+            st.next = next;
+            head.find('.mobui-online__season small').text(items.length ? t('o_episodes').replace('{n}', items.length) : '');
+
+            var watchLabel = t('watch');
+            if (next && tv) {
+                var en = next.data('mobuiEp');
+                if (en) watchLabel = t('watch') + ' S' + (seasonNum || 1) + ' • E' + en;
+            }
+            head.find('.mobui-online__watch span').text(watchLabel);
+            head.find('.mobui-online__watch').toggle(!!next);
+            head.find('.mobui-online__progress').text(tv && items.length ? t('o_watched').replace('{a}', watched).replace('{b}', items.length).replace('{c}', items.length - watched) : '');
+
+            // Бейджи на обложке: качество, источник, озвучка
+            var badges = [];
+            var q = st.quality;
+            if (q) badges.push(q);
+            if (src) badges.push(src.title);
+            if (voice && voice.subtitle) badges.push(voice.subtitle);
+            var bhtml = badges.map(function (b) { return badge(b); }).join('');
+            if (head.find('.mobui-online__badges').data('h') !== bhtml) head.find('.mobui-online__badges').data('h', bhtml).html(bhtml);
+
+            if (!st.qAsked) {
+                st.qAsked = true;
+                Quality.get(m, function (qq) { if (qq) { st.quality = qq; self.sync(object); } });
+            }
+            head.find('.mobui-online__q').text(st.quality || '').toggle(!!st.quality);
+
+            if (tv && seasonNum && m.id) this.descr(object, seasonNum);
+        },
+
+        // Одна серия: кадр с бейджами S•E и длительностью, под ним качество, рейтинг,
+        // дата и длительность, название и описание
+        episode: function (object, el, season) {
+            var st = object.mobuiOnline;
+            var num = parseInt(el.find('.online-prestige__episode-number').text(), 10) || 0;
+            var key = season + ':' + num;
+
+            if (!el.hasClass('mobui-ep')) {
+                el.addClass('mobui-ep');
+                var img = el.find('.online-prestige__img');
+                img.append('<div class="mobui-ep__tags"><span class="mobui-ep__se"></span><span class="mobui-ep__time"></span></div>');
+                el.find('.online-prestige__timeline').appendTo(img);
+                $('<div class="mobui-ep__info">' +
+                    '<div class="mobui-ep__top"><div class="mobui-ep__badges"></div><div class="mobui-ep__date"></div></div>' +
+                    '<div class="mobui-ep__title"></div>' +
+                    '<div class="mobui-ep__descr"></div>' +
+                  '</div>').insertAfter(img);
+            }
+
+            if (el.data('mobuiKey') === key && el.data('mobuiDescr') === !!st.desc[key]) return;
+            el.data('mobuiKey', key).data('mobuiEp', num).data('mobuiDescr', !!st.desc[key]);
+
+            var title = el.find('.online-prestige__title').text();
+            var time = el.find('.online-prestige__time').text();
+            var quality = el.find('.online-prestige__quality').text().trim();
+            var rate = el.find('.online-prestige-rate span').first().text().trim();
+            var spans = el.find('.online-prestige__info > span').filter(function () { return !$(this).hasClass('online-prestige-split'); });
+            var date = '';
+            spans.each(function () { var s = $(this).text(); if (/\d{4}/.test(s) && s.length < 30) date = s; });
+
+            // «00:53:00» → «53 мин»; нулевую длительность не показываем
+            var mins = 0;
+            var tp = String(time || '').split(':').map(function (x) { return parseInt(x, 10) || 0; });
+            if (tp.length === 3) mins = tp[0] * 60 + tp[1];
+            else if (tp.length === 2) mins = tp[0];
+            if (/^[0:\s]*$/.test(time || '')) time = '';
+            var dur = mins ? mins + t('o_min') : '';
+
+            el.find('.mobui-ep__se').text(season && num ? 'S' + season + '•E' + num : (num ? 'E' + num : '')).toggle(!!num);
+            el.find('.mobui-ep__time').text(time).toggle(!!time);
+            var badges = (quality ? badge(quality) : '') + (rate ? badge(rate) : '');
+            el.find('.mobui-ep__badges').html(badges);
+            el.find('.mobui-ep__date').html(metaLine([date, dur]));
+            el.find('.mobui-ep__title').text(title);
+            var d = st.desc[key];
+            el.find('.mobui-ep__descr').text(d || '').toggle(!!d);
+        },
+
+        descr: function (object, season) {
+            var st = object.mobuiOnline;
+            st.seasonsAsked = st.seasonsAsked || {};
+            if (st.seasonsAsked[season]) return;
+            st.seasonsAsked[season] = true;
+            var self = this;
+            try {
+                Lampa.Api.sources.tmdb.get('tv/' + st.movie.id + '/season/' + season, {}, function (json) {
+                    (json.episodes || []).forEach(function (e) {
+                        if (e.overview) st.desc[season + ':' + e.episode_number] = e.overview;
+                    });
+                    self.sync(object);
+                }, function () { });
+            } catch (e) { }
+        }
+    };
+
     // Окно выбора Lampa: кнопка закрытия как у шторки уведомлений
     var SelectBox = {
         init: function () {
@@ -2574,6 +3035,15 @@
                 var btn = $('<div class="mobui-sheet__close">' + icon('close') + '</div>');
                 head.append(btn);
                 onTap(btn, function () { try { Lampa.Select.close(); } catch (e) { } });
+            }
+
+            // Выбор источника онлайна — сеткой в две колонки с точкой «работает»
+            box.toggleClass('mobui-select--grid', !!this.grid);
+            if (this.grid) {
+                box.find('.selectbox-item').each(function () {
+                    if (!this.querySelector('.mobui-dot')) $(this).append('<i class="mobui-dot"></i>');
+                    $(this).toggleClass('mobui-off', this.style.opacity === '0.5');
+                });
             }
 
             // Флажки — как в редакторе меню, замок — из Lucide
@@ -3560,7 +4030,7 @@
             Lampa.Player.listener.follow('destroy', function () { setTimeout(syncPlayer, 0); });
         } catch (e) { }
 
-        var parts = [TapGuard, CardPress, SelectBox, PersonRow, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
+        var parts = [TapGuard, CardPress, SelectBox, PersonRow, Online, Bg, Header, Notify, TabBar, Drawer, Quality, Feed, Cards, Hero, Settings, Search];
 
         parts.forEach(function (part) {
             try { part.init(); }
